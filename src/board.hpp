@@ -28,9 +28,13 @@ public:
         for(int i = 0; i < 8; i++){
             for(int j = 0; j < 8; j++){
                 int value;
-                if(i == 1 | i == 0) value = 1;
-                else if(i == 7 | i == 6) value = 0;
-                else value = -1;
+
+                if(i == 0) value = j+1;
+                else if(i == 1) value = 8+j+1;
+                else if(i == 7) value = -j-1;
+                else if(i == 6) value = -8-j-1;
+                else value = 0;
+
                 // define
                 cels[i][j] = value;
             }
@@ -66,21 +70,15 @@ public:
     Action VerifyPosition(int i, int k, int gold){
         if(i < 0 || k < 0 || i > 7 || k > 7)
             return Action::unacessable;
-        int state = cels[i][k];
-        // std::cout << "Checking (" << i << "," << k << ") - State: " << state << std::endl;
-        switch (state)
-        {
-        case -1:
+        int id = cels[i][k];
+        if(id == 0) 
             return Action::movable;
-            break;
-        case 1:
-            return gold ? Action::blocked : Action::attack;
-            break;
-        case 0:
-            return gold ? Action::attack : Action::blocked;
-            break;
-        }
+
+        bool blocked = id > 0;
+        blocked = gold ? blocked : ~blocked;
+        return blocked ? Action::blocked : Action::attack;
     }
+    int Where(int i, int j) {return cels[i][j]; }
 
     std::tuple<int, int> to_coord(int i, int j){
         return std::make_tuple(x*i, y*j);

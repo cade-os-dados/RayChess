@@ -9,6 +9,7 @@
 /*
     Próximos passos
     1. Eliminar peças inimigas (vai precisar de um controler / ID por peça)
+    ideia: ter um vetor com 
 */
 
 const int W = 800;
@@ -16,6 +17,7 @@ const int H = 600;
 HighLightControler c_highlight;
 
 using namespace std;
+typedef vector<unique_ptr<Peca>> pecas;
 vector<unique_ptr<Peca>> InitPecas(bool is_gold)
 {
     vector<unique_ptr<Peca>> pecas;
@@ -76,8 +78,6 @@ int main()
             auto [x,y] = lg_cavalo.coords();
             auto [i,j] = board.from_coord(x,y);
 
-            // last_click = clicked;
-            // clicked = true;
             c_highlight.UpdateClicked(true);
 
             Vector2 mousePosition = GetMousePosition();
@@ -128,7 +128,16 @@ int main()
                         auto [xk,jk] = board.trunc_coord(mousePosition.x,mousePosition.y);
                         auto [act_x, act_y] = lg_cavalo.coords();
                         auto [act_xx,act_yy] = board.from_coord(act_x,act_y);
-                        board.RegisterPosition(act_xx, act_yy,-1);
+                        board.RegisterPosition(act_xx, act_yy,0);
+                        std::cout << "(xi,ji): (" << xi << "," << ji << ")" << std::endl;
+                        
+                        int piece = board.Where(xi,ji);
+                        if(piece == -5) violet.erase(violet.begin() + 4); // exemplo de como deleter o rei
+                        // porem ao deletar uma peça a ordem dos índices muda...
+                        // precisamos pensar em algo para resolver isso
+                        // uma possibilidade seria trocar por uma "peça nula" em que Draw não faz nada
+                        // por que basicamente é pra isso que serve o vetor... (até o momento)
+                        
                         lg_cavalo.Move({ (float)xk, (float)jk });
                         board.RegisterPosition(xi,ji,1);
                         c_highlight.Change(false);

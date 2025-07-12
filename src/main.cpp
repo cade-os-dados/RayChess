@@ -4,22 +4,16 @@
 #include <memory>
 #include "pieces.hpp"
 #include "board.hpp"
+#include "highlight.hpp"
 
 /*
-    Agora lógica para dar highlight nas peças:
-    1. verificar se alguma peça foi clicada
-    2. verificar os caminhos dessa peça, e quais caminhos são válidos (move ou attack)
-    3. mudar a cor do fundo para os caminhos válidos
-    4. armazenar em cache a cor original
-    5. voltar a cor original após a jogada ou após o usuário clicar fora...
-    6. armazenar em cache as possiveis jogadas quando está com highlight on
+    Próximos passos
+    1. Eliminar peças inimigas (vai precisar de um controler / ID por peça)
 */
 
 const int W = 800;
 const int H = 600;
-int last_hover[2];
-bool last_click = false;
-bool clicked = false;
+HighLightControler c_highlight;
 
 using namespace std;
 vector<unique_ptr<Peca>> InitPecas(bool is_gold)
@@ -68,7 +62,6 @@ int main()
 
         // ---- TETANDO MOVIMENTO ----
         lg_cavalo.Draw();
-        // lg_cavalo.MoveOnClick();
         board.changeCellColor(0,0,GOLD);
 
         // texto aleatorio
@@ -83,34 +76,21 @@ int main()
             auto [x,y] = lg_cavalo.coords();
             auto [i,j] = board.from_coord(x,y);
 
-            last_click = clicked;
-            clicked = true;
+            // last_click = clicked;
+            // clicked = true;
+            c_highlight.UpdateClicked(true);
 
             Vector2 mousePosition = GetMousePosition();
             std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
             auto [a,b] = board.from_coord(mousePosition.x, mousePosition.y);
+
+            //debug
             Action verify = board.VerifyPosition(a, b, 1);
             std::cout << "i: " << a << "j: " << b << std::endl;
-            switch (verify)
-            {
-            case Action::attack:
-                std::cout << "Atack" << std::endl;
-                break;
-            case Action::blocked:
-                std::cout << "Blocked" << std::endl;
-                break;
-            case Action::movable:
-                std::cout << "Movable" << std::endl;
-                break;
-            case Action::unacessable:
-                std::cout << "Unacessable" << std::endl;
-                break;
-            }
+            debugAction(verify);
             
-
             if (a==i && b == j){
-                clicked=true;
-                board.changeHighlight(true);
+                c_highlight.Change(true);
                 // debug
                 std::cout << "Clicou no cavalo, no quadrante: (" << i << "," 
                 << j << ")" << std::endl;
@@ -127,21 +107,21 @@ int main()
                         board.changeCellColor(xi,ji,RED);
                     }
                 }
-                // board.Debug();
-                // std::cout << "\nColors:\n";
-                // board.DebugColor();
+                // debug
+                board.Debug();
+                std::cout << "\nColors:\n";
+                board.DebugColor();
                 
-            }else { last_click = clicked; clicked = false; }
+            }else { 
+                c_highlight.UpdateClicked(false);
+            }
 
-            if(board.highlight_on())
+            if(c_highlight.is_on())
             {
-                // unhighlight
-                if (clicked == false)
+                if (c_highlight.Unhighlight())
                 {
-                    for(int p = 0; p < 8; p++){
-                        for(int k = 0; k < 8; k++) board.backupCellColor(p,k);
-                    }
-                    board.changeHighlight(false);
+                    board.backupAllCellColor();
+                    c_highlight.Change(false);
                 }
                 for (auto [xi,ji] : cache_possible_moves){
                     if(a == xi && b == ji){
@@ -151,12 +131,11 @@ int main()
                         board.RegisterPosition(act_xx, act_yy,-1);
                         lg_cavalo.Move({ (float)xk, (float)jk });
                         board.RegisterPosition(xi,ji,1);
-                        board.changeHighlight(false);
+                        c_highlight.Change(false);
                         break;
                     }
                 }
             }
-           
         }
         EndDrawing();
     }

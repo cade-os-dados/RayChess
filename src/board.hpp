@@ -23,7 +23,6 @@ private:
     int x, y, n, cels[8][8];
     Color celColors[8][8];
     Color originalCelColors[8][8];
-    bool highlight;
 public:
     Board(int w, int h, int len) : x(w), y(h), n(len) {
         for(int i = 0; i < 8; i++){
@@ -38,7 +37,6 @@ public:
         }
         setupColors();
     }
-    void changeHighlight(bool changer){highlight = changer;}
     void setupColors(void){
         int c = 0;
         for(int i = 0; i < n; i++) // cols
@@ -83,9 +81,6 @@ public:
             break;
         }
     }
-    bool highlight_on(void){
-        return highlight;
-    }
 
     std::tuple<int, int> to_coord(int i, int j){
         return std::make_tuple(x*i, y*j);
@@ -106,6 +101,11 @@ public:
     void backupCellColor(int i, int j){
         celColors[i][j] = originalCelColors[i][j];
     }
+    void backupAllCellColor(void){
+        for(int p = 0; p < 8; p++){
+            for(int k = 0; k < 8; k++) this->backupCellColor(p,k);
+        }
+    }
 
     std::tuple<int,int> onHover(Color cor){
         Vector2 mousePosition = GetMousePosition();
@@ -118,6 +118,9 @@ public:
     auto getColor(int i, int j){
         return celColors[i][j];
     }
+
+    /*------------------------------------------------------------------------------------------------*/
+    /*-----------------------------------------------DEBUG--------------------------------------------*/
     void Debug(){
         for(int i = 0; i < 8; i++){
             for(int j = 0; j < 8; j++){
@@ -146,3 +149,22 @@ public:
         }
     }
 };
+
+void debugAction(Action verify)
+{
+    switch (verify)
+    {
+    case Action::attack:
+        std::cout << "Atack" << std::endl;
+        break;
+    case Action::blocked:
+        std::cout << "Blocked" << std::endl;
+        break;
+    case Action::movable:
+        std::cout << "Movable" << std::endl;
+        break;
+    case Action::unacessable:
+        std::cout << "Unacessable" << std::endl;
+        break;
+    }
+}

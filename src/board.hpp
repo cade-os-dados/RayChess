@@ -61,7 +61,31 @@ public:
         for(int i = 0; i < n; i++) // cols
         {
             for(int j = 0; j < n; j++) // rows
-                DrawRectangle(x*i, y*j, x, y, celColors[j][i]);
+            {
+                // DrawRectangle(x*i, y*j, x, y, originalCelColors[j][i]);
+                Color cor = celColors[j][i];
+                Rectangle retangulo{(float)x*i, (float)y*j, (float)x, (float)y};
+                // DrawRectangleLinesEx(retangulo,1.5,GRAY);
+                DrawRectangleRoundedLinesEx(retangulo,0.1,20,1.7,GRAY);
+
+                if(!CompareColors(cor,WHITE) && !CompareColors(cor,BLACK)){
+                    Color cor2 = cor;
+                    cor2.a = 150;
+                    DrawRectangle(retangulo.x,retangulo.y,retangulo.width,retangulo.height,cor2);
+
+                    // círculo
+                    // DrawCircle(x*i + x/2, y*j + y/2, 10, cor);
+
+                    // pulse effect
+                    // int alpha = (int)(GetTime() * 255) % 255;
+                    // Color pulseColor = {0, 255, 0, alpha};
+                    // DrawRectangle(x*i, y*j, x, y, pulseColor);
+
+                }else{
+                    DrawRectangle(x*i, y*j, x, y, cor); 
+                }
+            }
+                
         }
     }
     void RegisterPosition(int i, int k, int gold){
@@ -75,9 +99,16 @@ public:
             return Action::movable;
 
         bool blocked = id > 0;
-        blocked = gold ? blocked : ~blocked;
+        blocked = gold ? blocked : !blocked;
         return blocked ? Action::blocked : Action::attack;
     }
+    int CheckWhereCliked(void)
+    {
+        Vector2 pos = GetMousePosition();
+        auto [a,b] = this->from_coord(pos.x,pos.y);
+        return this->cels[a][b];
+    } 
+
     int Where(int i, int j) {return cels[i][j]; }
 
     std::tuple<int, int> to_coord(int i, int j){
@@ -115,6 +146,20 @@ public:
     }
     auto getColor(int i, int j){
         return celColors[i][j];
+    }
+
+    void Highlight(std::vector<std::tuple<int,int>> possible_positions)
+    {
+        for (auto [xi,ji] : possible_positions){
+            // std::cout << "(xi, ji): (" << xi << "," << ji << ")" << std::endl;
+            Action acao = this -> VerifyPosition(xi,ji,1);
+            if (acao == Action::movable){
+                // std::cout << "Changing color: " << xi << "," << ji << std::endl;
+                this -> changeCellColor(xi,ji,GREEN);
+            } else if(acao == Action::attack) {
+                this -> changeCellColor(xi,ji,RED);
+            }
+        }
     }
 
     /*------------------------------------------------------------------------------------------------*/

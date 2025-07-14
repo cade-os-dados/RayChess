@@ -1,7 +1,7 @@
 class HighLightControler
 {
 private:
-    bool last_click, clicked, on;
+    bool last_click, clicked, on, m_is_gold;
 public:
     HighLightControler(void)
     {
@@ -9,6 +9,8 @@ public:
         clicked = false;
     }
     void Change(bool changer){on = changer;}
+    void HighlightedColorIsGold(bool gold) {m_is_gold = gold;}
+    bool is_gold(void){return m_is_gold;}
     bool is_on(void){
         return on;
     }

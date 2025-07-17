@@ -136,30 +136,28 @@ public:
         }
     }
 
-    std::tuple<int,int> onHover(Color cor){
-        Vector2 mousePosition = GetMousePosition();
-        // std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
-        auto [a,b] = this->from_coord(mousePosition.x, mousePosition.y);
-        std::cout << "[DEBUG] COORDS A: " << a << " B: " << b << std::endl; 
-        this->changeCellColor(b,a,cor);
-        return std::make_tuple(b,a);
-    }
     auto getColor(int i, int j){
         return celColors[i][j];
     }
 
-    void Highlight(std::vector<std::tuple<int,int>> possible_positions)
+    void Highlight(std::vector<std::tuple<int,int>>& possible_positions)
     {
+        std::vector<std::tuple<int,int>> possible_positions2;
+
         for (auto [xi,ji] : possible_positions){
             // std::cout << "(xi, ji): (" << xi << "," << ji << ")" << std::endl;
             Action acao = this -> VerifyPosition(xi,ji,1);
             if (acao == Action::movable){
                 // std::cout << "Changing color: " << xi << "," << ji << std::endl;
                 this -> changeCellColor(xi,ji,GREEN);
+                possible_positions2.push_back(std::make_tuple(xi,ji));
             } else if(acao == Action::attack) {
                 this -> changeCellColor(xi,ji,RED);
+                possible_positions2.push_back(std::make_tuple(xi,ji));
             }
         }
+
+        possible_positions.swap(possible_positions2);
     }
 
     /*------------------------------------------------------------------------------------------------*/

@@ -1,7 +1,13 @@
+#pragma once
+#include "pieces.hpp"
+#include <memory>
+
 class HighLightControler
 {
 private:
     bool last_click, clicked, on, m_is_gold;
+    std::shared_ptr<Peca> m_peca;
+    int idx;
 public:
     HighLightControler(void)
     {
@@ -20,4 +26,8 @@ public:
         clicked = clicou;
     }
     bool Unhighlight(void){return clicked == false;}
+    int getPieceIndex(void){return idx;}
+    std::shared_ptr<Peca> getPiece(void){return m_peca;};
+    void setPiece(std::shared_ptr<Peca> peca){m_peca = peca;}
+    void setPieceIndex(int index){idx = index;}
 };

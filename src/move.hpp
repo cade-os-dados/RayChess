@@ -22,6 +22,9 @@ private:
     int row, col, is_gold;
 public:
     InfinityMove(Board* board) : m_Board(board) {}
+    Action VerifyPosition(int k, int l, bool gold){
+        return m_Board -> VerifyPosition(k,l,(int)gold);
+    }
     bool BreakCondition(int k, int l, int is_gold){
         return m_Board -> VerifyPosition(k,l,is_gold) != Action::movable;
     }

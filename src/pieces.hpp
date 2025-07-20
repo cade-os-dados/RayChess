@@ -48,31 +48,65 @@ public:
 };
 
 class Peao : public Peca {
+private:
+    size_t OriginalPlace[2];
 public:
-    Peao(bool gold, int i, InfinityMove* mv) : Peca(gold, "img/Sprite-0001.png", 75, 6*75, mv){m_width = (float)100*i;}
+    Peao(bool gold, int i, InfinityMove* mv) : Peca(gold, "img/Sprite-0001.png", 75, 6*75, mv){
+        m_width = (float)100*i; 
+        OriginalPlace[0] = m_width;
+        OriginalPlace[1] = m_height;
+    }
     void Draw() override
     {
         DrawResize(texture,{m_width,m_height,100,75});
     }
 
+    bool isOnInitialPosition(void)
+    {
+        return (m_width == OriginalPlace[0] && m_height == OriginalPlace[1]);
+    }
+    inline void AppendCoordIfAttack(VecCoords& coords, int row, int col)
+    {
+        std::cout << "[DEBUG] (" << row << "," <<  
+            col << "): "
+            << this->move->VerifyPosition(row,col,this->is_gold) << std::endl;
+        if(this->move->VerifyPosition(row,col,this->is_gold) == Action::attack)
+            append_coords(coords,row,col);
+    }
+    inline void AppendCoordIfMovable(VecCoords& coords, int row, int col)
+    {
+        if(this->move->VerifyPosition(row,col,this->is_gold) == Action::movable)
+            append_coords(coords,row,col);
+    }
+
     VecCoords PossibleMoveCoords(int i, int j) override
     {
-        /*
-            Observação...
-            Diagonal somente se for para ataque
-            e ele anda duas casas se tiver partindo da posição original...
-            e para frente não ataca
-        */
         VecCoords coords;
         if(is_gold)
         {
-            append_coords(coords,i+1,j); // down
-            append_coords(coords,i+1,j-1); // diagonal down-left
-            append_coords(coords,i+1,j+1); // diagonal down-right
+            AppendCoordIfMovable(coords,i+1,j); // down
+            AppendCoordIfAttack(coords,i+1,j-1); // diagonal down-left
+            AppendCoordIfAttack(coords,i+1,j+1); // diagonal down-right
+
+            // passo duplo
+            if(this->isOnInitialPosition() && 
+                this->move->VerifyPosition(i+1,j,this->is_gold) == Action::movable &&
+                this->move->VerifyPosition(i+2,j,this->is_gold) == Action::movable)
+            {
+                append_coords(coords,i+2,j);
+            }
         }else{
-            append_coords(coords,i-1,j); // up
-            append_coords(coords,i-1,j-1); // diagonal up-left
-            append_coords(coords,i-1,j+1); // diagonal up-right
+            AppendCoordIfMovable(coords,i-1,j); // up
+            AppendCoordIfAttack(coords,i-1,j-1); // diagonal up-left
+            AppendCoordIfAttack(coords,i-1,j+1); // diagonal up-right
+
+            // passo duplo
+            if(this->isOnInitialPosition() && 
+                this->move->VerifyPosition(i-1,j,this->is_gold) == Action::movable &&
+                this->move->VerifyPosition(i-2,j,this->is_gold) == Action::movable)
+            {
+                append_coords(coords,i-2,j);
+            }
         }
 
         return coords;

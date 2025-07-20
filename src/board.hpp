@@ -140,15 +140,13 @@ public:
         return celColors[i][j];
     }
 
-    void Highlight(std::vector<std::tuple<int,int>>& possible_positions)
+    void Highlight(std::vector<std::tuple<int,int>>& possible_positions, int is_gold)
     {
         std::vector<std::tuple<int,int>> possible_positions2;
 
         for (auto [xi,ji] : possible_positions){
-            // std::cout << "(xi, ji): (" << xi << "," << ji << ")" << std::endl;
-            Action acao = this -> VerifyPosition(xi,ji,1);
+            Action acao = this -> VerifyPosition(xi,ji,is_gold);
             if (acao == Action::movable){
-                // std::cout << "Changing color: " << xi << "," << ji << std::endl;
                 this -> changeCellColor(xi,ji,GREEN);
                 possible_positions2.push_back(std::make_tuple(xi,ji));
             } else if(acao == Action::attack) {
@@ -190,22 +188,3 @@ public:
         }
     }
 };
-
-void debugAction(Action verify)
-{
-    switch (verify)
-    {
-    case Action::attack:
-        std::cout << "Atack" << std::endl;
-        break;
-    case Action::blocked:
-        std::cout << "Blocked" << std::endl;
-        break;
-    case Action::movable:
-        std::cout << "Movable" << std::endl;
-        break;
-    case Action::unacessable:
-        std::cout << "Unacessable" << std::endl;
-        break;
-    }
-}

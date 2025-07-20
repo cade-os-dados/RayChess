@@ -16,7 +16,7 @@ public:
     }
     void Change(bool changer){on = changer;}
     void HighlightedColorIsGold(bool gold) {m_is_gold = gold;}
-    bool is_gold(void){return m_is_gold;}
+    bool IsGold(void){return m_is_gold;}
     bool is_on(void){
         return on;
     }

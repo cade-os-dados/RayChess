@@ -1,8 +1,7 @@
 #pragma once
 #include <raylib.h>
 #include <iostream>
-
-typedef std::vector<std::tuple<int,int>> VecCoords;
+#include "move.hpp"
 
 void DrawResize(Texture2D texture, Rectangle new_size)
 {
@@ -24,19 +23,18 @@ Texture2D load_texture(bool gold, const char* path)
     return LoadTextureFromImage(image);
 }
 
-void append_coords(VecCoords& vec, int i, int j){
-    vec.push_back(std::make_tuple(i,j));
-}
-
 class Peca {
 protected:
     Texture2D texture;
     float m_width, m_height;
+    bool is_gold;
+    InfinityMove* move;
 public:
-    Peca(bool gold, const char* imagePath, float height_if_gold, float height_if_violet) 
+    Peca(bool gold, const char* imagePath, float height_if_gold, float height_if_violet, InfinityMove* mv) 
     {
         m_height = gold ? height_if_gold : height_if_violet;
         texture = load_texture(gold, imagePath);
+        is_gold = gold; move = mv;
     }
     virtual ~Peca() { UnloadTexture(texture); }
     virtual void Draw() = 0; // Método virtual puro para obrigar as subclasses a implementar
@@ -51,29 +49,31 @@ public:
 
 class Peao : public Peca {
 public:
-    Peao(bool gold, int i) : Peca(gold, "img/Sprite-0001.png", 75, 6*75){m_width = (float)100*i;}
+    Peao(bool gold, int i, InfinityMove* mv) : Peca(gold, "img/Sprite-0001.png", 75, 6*75, mv){m_width = (float)100*i;}
     void Draw() override
     {
-        // for(int i = 0; i < 8; i++)
-        //     DrawResize(texture, {(float) 100*i, m_height, 100, 75});
         DrawResize(texture,{m_width,m_height,100,75});
     }
 
     VecCoords PossibleMoveCoords(int i, int j) override
     {
+        /*
+            Observação...
+            Diagonal somente se for para ataque
+            e ele anda duas casas se tiver partindo da posição original...
+            e para frente não ataca
+        */
         VecCoords coords;
-        append_coords(coords,i,j+1); // up
-        append_coords(coords,i,j-1); // down
-
-        // right
-        append_coords(coords,i+1,j);
-        append_coords(coords,i+1,j+1); // diagonal
-        append_coords(coords,i+1,j-1); // diagonal
-
-        // left
-        append_coords(coords,i-1,j);
-        append_coords(coords,i-1,j+1); // diagonal
-        append_coords(coords,i-1,j-1); // diagonal
+        if(is_gold)
+        {
+            append_coords(coords,i+1,j); // down
+            append_coords(coords,i+1,j-1); // diagonal down-left
+            append_coords(coords,i+1,j+1); // diagonal down-right
+        }else{
+            append_coords(coords,i-1,j); // up
+            append_coords(coords,i-1,j-1); // diagonal up-left
+            append_coords(coords,i-1,j+1); // diagonal up-right
+        }
 
         return coords;
     }
@@ -81,7 +81,7 @@ public:
 
 class Cavalo : public Peca {
 public:
-    Cavalo(bool gold, bool left) : Peca(gold, "img/Sprite-0002.png", 0, 7*75){
+    Cavalo(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0002.png", 0, 7*75, mv){
         m_width = left ? 100 : 600;
     }
     void Draw() override
@@ -112,11 +112,9 @@ public:
 
 class Torre : public Peca {
 public:
-    Torre(bool gold, bool left) : Peca(gold, "img/Sprite-0003.png", 0, 7*75){m_width = left ? 0 : 700;}
+    Torre(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0003.png", 0, 7*75, mv){m_width = left ? 0 : 700;}
     void Draw() override
     {
-        // DrawResize(texture, {0, m_height, 100, 75});
-        // DrawResize(texture, {700, m_height, 100, 75});
         DrawResize(texture, {m_width, m_height, 100, 75});
     }
 
@@ -124,13 +122,10 @@ public:
     {
         VecCoords coords;
 
-        // left/right/up/down
-        for(int p = 0; p < 8; p++){
-            if(p != i)
-                append_coords(coords,p,j);
-            if(p!= j)
-                append_coords(coords,i,p);
-        }
+        this->move->Left(coords,i,j,this->is_gold);
+        this->move->Right(coords,i,j,this->is_gold);
+        this->move->Top(coords,i,j,this->is_gold);
+        this->move->Bottom(coords,i,j,this->is_gold);
 
         return coords;
     }
@@ -138,11 +133,9 @@ public:
 
 class Bispo : public Peca {
 public:
-    Bispo(bool gold, bool left) : Peca(gold, "img/Sprite-0004.png", 0, 7*75){ m_width = left ? 200 : 500;}
+    Bispo(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0004.png", 0, 7*75, mv){ m_width = left ? 200 : 500;}
     void Draw() override
     {
-        // DrawResize(texture, {200, m_height, 100, 75});
-        // DrawResize(texture, {500, m_height, 100, 75});
         DrawResize(texture, {m_width, m_height, 100, 75});
     }
 
@@ -150,33 +143,10 @@ public:
     {
         VecCoords coords;
 
-        // Diagonal -> LeftDown
-        int k = i, l = j;
-        while(k < 8 && l < 8){
-            k++; l++;
-            append_coords(coords,k,l);
-        }
-
-        // Diagonal -> RightUp
-        k = i, l = j;
-        while(k >= 0 && l >= 0){
-            k--; l--;
-            append_coords(coords,k,l);
-        }
-
-        // Diagonal -> RightDown
-        k = i, l = j;
-        while(k >= 0 && l < 8){
-            k--; l++;
-            append_coords(coords,k,l);
-        }
-
-        // Diagonal -> LeftUp
-        k = i, l = j;
-        while(k < 8 && l >= 0){
-            k++; l--;
-            append_coords(coords,k,l);
-        }
+        this->move->DiagonalLeftBottom(coords,i,j,this->is_gold);
+        this->move->DiagonalRightTop(coords,i,j,this->is_gold);
+        this->move->DiagonalRightBottom(coords,i,j,this->is_gold);
+        this->move->DiagonalLeftTop(coords,i,j,this->is_gold);
 
         return coords;
     }
@@ -184,7 +154,7 @@ public:
 
 class Rainha : public Peca {
 public:
-    Rainha(bool gold) : Peca(gold, "img/Sprite-0005.png", 0, 7*75){m_width = 300;}
+    Rainha(bool gold, InfinityMove* mv) : Peca(gold, "img/Sprite-0005.png", 0, 7*75, mv){m_width = 300;}
     void Draw() override
     {
         DrawResize(texture, {m_width, m_height, 100, 75});
@@ -193,41 +163,14 @@ public:
     {
         VecCoords coords;
 
-        // Diagonal -> LeftDown
-        int k = i, l = j;
-        while(k < 8 && l < 8){
-            k++; l++;
-            append_coords(coords,k,l);
-        }
-
-        // Diagonal -> RightUp
-        k = i, l = j;
-        while(k >= 0 && l >= 0){
-            k--; l--;
-            append_coords(coords,k,l);
-        }
-
-        // Diagonal -> RightDown
-        k = i, l = j;
-        while(k >= 0 && l < 8){
-            k--; l++;
-            append_coords(coords,k,l);
-        }
-
-        // Diagonal -> LeftUp
-        k = i, l = j;
-        while(k < 8 && l >= 0){
-            k++; l--;
-            append_coords(coords,k,l);
-        }
-
-        // left/right/up/down
-        for(int p = 0; p < 8; p++){
-            if(p != i)
-                append_coords(coords,p,j);
-            if(p!= j)
-                append_coords(coords,i,p);
-        }
+        this->move->DiagonalLeftBottom(coords,i,j,this->is_gold);
+        this->move->DiagonalRightTop(coords,i,j,this->is_gold);
+        this->move->DiagonalRightBottom(coords,i,j,this->is_gold);
+        this->move->DiagonalLeftTop(coords,i,j,this->is_gold);
+        this->move->Left(coords,i,j,this->is_gold);
+        this->move->Right(coords,i,j,this->is_gold);
+        this->move->Top(coords,i,j,this->is_gold);
+        this->move->Bottom(coords,i,j,this->is_gold);
 
         return coords;
     }
@@ -235,7 +178,7 @@ public:
 
 class Rei : public Peca {
 public:
-    Rei(bool gold) : Peca(gold, "img/Sprite-0006.png", 0, 7*75){m_width = 400;}
+    Rei(bool gold, InfinityMove* mv) : Peca(gold, "img/Sprite-0006.png", 0, 7*75, mv){m_width = 400;}
     void Draw() override
     {
         DrawResize(texture, {m_width, m_height, 100, 75});

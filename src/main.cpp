@@ -2,7 +2,7 @@
 #include <raylib.h>
 #include <vector>
 #include <memory>
-#include "board.hpp"
+// #include "board.hpp"
 #include "highlight.hpp"
 
 const int W = 800;
@@ -11,44 +11,45 @@ HighLightControler c_highlight;
 
 using namespace std;
 typedef vector<shared_ptr<Peca>> pecas;
-pecas InitPecas(bool is_gold)
+pecas InitPecas(bool is_gold, InfinityMove* move)
 {
     pecas pecas;
-    pecas.push_back(make_shared<Torre>(is_gold, true));
-    pecas.push_back(make_shared<Cavalo>(is_gold, true));
-    pecas.push_back(make_shared<Bispo>(is_gold,true)); 
-    pecas.push_back(make_shared<Rainha>(is_gold));
-    pecas.push_back(make_shared<Rei>(is_gold));
-    pecas.push_back(make_shared<Bispo>(is_gold, false));
-    pecas.push_back(make_shared<Cavalo>(is_gold, false));
-    pecas.push_back(make_shared<Torre>(is_gold, false));
+    pecas.push_back(make_shared<Torre>(is_gold, true,move));
+    pecas.push_back(make_shared<Cavalo>(is_gold, true,move));
+    pecas.push_back(make_shared<Bispo>(is_gold,true,move)); 
+    pecas.push_back(make_shared<Rainha>(is_gold,move));
+    pecas.push_back(make_shared<Rei>(is_gold,move));
+    pecas.push_back(make_shared<Bispo>(is_gold, false,move));
+    pecas.push_back(make_shared<Cavalo>(is_gold, false,move));
+    pecas.push_back(make_shared<Torre>(is_gold, false,move));
     for(int i = 0; i < 8; i++){
-        pecas.push_back(make_shared<Peao>(is_gold,i)); // PEAO
+        pecas.push_back(make_shared<Peao>(is_gold,i,move)); // PEAO
     }
     return pecas;
 }
 
 int main()
 {
-    int rodada = 0;
-    InitWindow(W, H, "Chess!");
-    SetTargetFPS(60);
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
-
-    pecas gold = InitPecas(true);
-    pecas violet = InitPecas(false);
-    pecas gold_eliminados;
-    pecas violet_eliminados;
-
-    std::vector<std::tuple<int,int>> cache_possible_moves;
-
     // ---- TABULEIRO ----
     
     int n = 8;
     int cel_width = (int) (W / n);
     int cel_height = (int) (H / n);
     Board board(cel_width, cel_height, n);
+    InfinityMove move(&board);
 
+    int rodada = 0;
+    InitWindow(W, H, "Chess!");
+    SetTargetFPS(60);
+    SetConfigFlags(FLAG_MSAA_4X_HINT);
+
+    pecas gold = InitPecas(true, &move);
+    pecas violet = InitPecas(false, &move);
+    pecas gold_eliminados;
+    pecas violet_eliminados;
+
+    std::vector<std::tuple<int,int>> cache_possible_moves;
+    
     // bool debug = true;
     while(!WindowShouldClose())
     {

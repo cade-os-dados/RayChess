@@ -91,7 +91,7 @@ public:
     void RegisterPosition(int i, int k, int gold){
         cels[i][k] = gold;
     }
-    Action VerifyPosition(int i, int k, int gold){
+    Action VerifyPosition(int i, int k, int gold) const{
         if(i < 0 || k < 0 || i > 7 || k > 7)
             return Action::unacessable;
         int id = cels[i][k];

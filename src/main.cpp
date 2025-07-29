@@ -56,8 +56,6 @@ int main()
     // bool debug = true;
     while(!WindowShouldClose())
     {
-        
-
         BeginDrawing(); 
         ClearBackground(RAYWHITE);
         
@@ -82,7 +80,7 @@ int main()
         {
             rodada++;
             std::cout << "------------------------------\nRodada: " << rodada << std::endl;
-
+            
             c_highlight.UpdateClicked(true);
 
             Vector2 mousePosition = GetMousePosition();
@@ -93,7 +91,7 @@ int main()
             int where_clicked = board.CheckWhereCliked();
 
             // caso gold
-            if(!c_highlight.is_on() && where_clicked > 0 && is_gold_turn){
+            if(where_clicked > 0 && is_gold_turn){
                 c_highlight.Change(true);
                 c_highlight.HighlightedColorIsGold(true);
                 c_highlight.setPiece(gold[where_clicked-1]);
@@ -102,10 +100,15 @@ int main()
                 auto [i,j] = board.from_coord(x,y);
                 cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
                 board.Highlight(cache_possible_moves, 1);
+                
+                /* Se não há movimentos possíveis para a peça, então sequer aciona o sistema de highlight... */
+                if (cache_possible_moves.empty()){
+                    c_highlight.Change(false);
+                }
             }
 
             // caso violet
-            if(!c_highlight.is_on() && where_clicked < 0 && !is_gold_turn){
+            if(where_clicked < 0 && !is_gold_turn){
                 c_highlight.Change(true);
                 c_highlight.HighlightedColorIsGold(false);
                 c_highlight.setPiece(violet[abs(where_clicked)-1]);
@@ -114,13 +117,20 @@ int main()
                 auto [i,j] = board.from_coord(x,y);
                 cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
                 board.Highlight(cache_possible_moves, 0);
+
+                if (cache_possible_moves.empty()){
+                    c_highlight.Change(false);
+                }
             }
 
 
             if(c_highlight.is_on())
             {
-                if(where_clicked != c_highlight.getPieceIndex())
+                if(c_highlight.DoubleClickedOnPiece(where_clicked) || 
+                    where_clicked != c_highlight.getPieceIndex() 
+                ){
                     c_highlight.UpdateClicked(false);
+                }
 
                 if (c_highlight.Unhighlight())
                 {

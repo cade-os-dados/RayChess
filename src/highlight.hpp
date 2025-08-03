@@ -7,7 +7,7 @@ typedef std::vector<std::shared_ptr<Peca>> pecas;
 class HighLightControler
 {
 private:
-    bool clicked, on, m_is_gold;
+    bool clicked, on, rehighlight;
     pecas *violet, *gold;
     int idx, nclicks;
 public:
@@ -22,6 +22,7 @@ public:
     {
         clicked = false;
         nclicks = 0;
+        rehighlight = false;
     }
     void Change(bool changer){on = changer;}
     bool IsGold(void){return this->idx > 0;}
@@ -41,6 +42,9 @@ public:
     bool Unhighlight(void){
         return !clicked;
     }
+    bool ReHighlight(void){
+        return rehighlight;
+    }
     int getPieceIndex(void){return idx;}
     std::shared_ptr<Peca> getPiece(void){
         if (idx == 0) return nullptr;
@@ -53,6 +57,7 @@ public:
     }
 
     void setPieceIndex(int index){idx = index;}
+    void setReHighlight(bool value){rehighlight = value;}
 
     // conditions
     int DoubleClickedOnPiece(int clickIdx)
@@ -61,8 +66,8 @@ public:
         return nclicks == 2;
     }
     bool ClickedSameTeam(int clickIdx){
-        bool gold_clicked_gold = m_is_gold && clickIdx > 0;
-        bool violet_clicked_violet = !m_is_gold && clickIdx < 0;
+        bool gold_clicked_gold = this->IsGold() && clickIdx > 0;
+        bool violet_clicked_violet = !this->IsGold() && clickIdx < 0;
         return gold_clicked_gold || violet_clicked_violet;
     }
 

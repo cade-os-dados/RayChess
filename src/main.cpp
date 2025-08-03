@@ -124,10 +124,13 @@ int main()
 
             if(c_highlight.is_on())
             {
-                if(c_highlight.DoubleClickedOnPiece(where_clicked) || 
-                    where_clicked != c_highlight.getPieceIndex() 
-                    // !c_highlight.ClickedSameTeam(where_clicked)
+                if(!c_highlight.DoubleClickedOnPiece(where_clicked) &&
+                    c_highlight.ClickedSameTeam(where_clicked)
                 ){
+                    // backup everything but rehighlight...
+                    c_highlight.setReHighlight(true);
+                    
+                }else{
                     std::cout << "Double Clicked?: " << c_highlight.DoubleClickedOnPiece(where_clicked) << std::endl;
                     std::cout << "ClickedSameTeam?: " << c_highlight.ClickedSameTeam(where_clicked) << std::endl;
                     c_highlight.UpdateClicked(false);
@@ -138,6 +141,40 @@ int main()
                 {
                     board.backupAllCellColor();
                     c_highlight.Change(false);
+                }
+
+                if(c_highlight.ReHighlight()){
+                    c_highlight.Change(true);
+                    c_highlight.setReHighlight(false);
+                    board.backupAllCellColor();
+
+                    // highlight again...
+                    if(where_clicked > 0 && is_gold_turn){
+                        c_highlight.Change(true);
+                        c_highlight.setPieceIndex(where_clicked);
+                        auto [x,y] = c_highlight.getPiece() -> coords();
+                        auto [i,j] = board.from_coord(x,y);
+                        cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
+                        board.Highlight(cache_possible_moves, 1);
+                        
+                        /* Se não há movimentos possíveis para a peça, então sequer aciona o sistema de highlight... */
+                        if (cache_possible_moves.empty()){
+                            c_highlight.Change(false);
+                        }
+                    }
+
+                    if(where_clicked < 0 && !is_gold_turn){
+                        c_highlight.Change(true);
+                        c_highlight.setPieceIndex(where_clicked);
+                        auto [x,y] = c_highlight.getPiece() -> coords();
+                        auto [i,j] = board.from_coord(x,y);
+                        cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
+                        board.Highlight(cache_possible_moves, 0);
+
+                        if (cache_possible_moves.empty()){
+                            c_highlight.Change(false);
+                        }
+                    }
                 }
 
                 for (auto [xi,ji] : cache_possible_moves){

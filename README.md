@@ -1,6 +1,8 @@
 # Movimentação
 
-Adicionar um Switch para ativar o Highlight caso clique em outra peça do mesmo tabuleiro. Neste caso não precisa checar se a peça está com highlight, apenas se está na vez...
+1. Dar Highlight na peça que está selecionada, além dos possíveis movimentos dela (que já está implementado)
+
+2. Simplificar a API com um Game/GameControler que faça ficar mais fácil reaplicar alguns trechos de código que se repetem...
 
 # Condição de Término do Jogo
 

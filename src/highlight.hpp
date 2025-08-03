@@ -2,29 +2,33 @@
 #include "pieces.hpp"
 #include <memory>
 
+typedef std::vector<std::shared_ptr<Peca>> pecas;
+
 class HighLightControler
 {
 private:
     bool clicked, on, m_is_gold;
-    std::shared_ptr<Peca> m_peca;
+    pecas *violet, *gold;
     int idx, nclicks;
 public:
+    void SetPieces(pecas *pecas_, bool gold){
+        if(gold){
+            this->gold = pecas_;
+        }else{
+            this->violet = pecas_;
+        }
+    }
     HighLightControler(void)
     {
         clicked = false;
         nclicks = 0;
     }
     void Change(bool changer){on = changer;}
-    void HighlightedColorIsGold(bool gold) {m_is_gold = gold;}
-    bool IsGold(void){return m_is_gold;}
+    bool IsGold(void){return this->idx > 0;}
     bool is_on(void){
         return on;
     }
-    int DoubleClickedOnPiece(int clickIdx)
-    {
-        nclicks = clickIdx == idx ? nclicks + 1 : 0;
-        return nclicks == 2;
-    }
+
     int GetNClicks(){
         return nclicks;
     }
@@ -38,7 +42,28 @@ public:
         return !clicked;
     }
     int getPieceIndex(void){return idx;}
-    std::shared_ptr<Peca> getPiece(void){return m_peca;};
-    void setPiece(std::shared_ptr<Peca> peca){m_peca = peca;}
+    std::shared_ptr<Peca> getPiece(void){
+        if (idx == 0) return nullptr;
+        else if (idx > 0){
+            return (*this->gold)[idx-1];
+        }
+        else if (idx < 0){
+            return (*this->violet)[abs(idx)-1];
+        }
+    }
+
     void setPieceIndex(int index){idx = index;}
+
+    // conditions
+    int DoubleClickedOnPiece(int clickIdx)
+    {
+        nclicks = clickIdx == idx ? nclicks + 1 : 0;
+        return nclicks == 2;
+    }
+    bool ClickedSameTeam(int clickIdx){
+        bool gold_clicked_gold = m_is_gold && clickIdx > 0;
+        bool violet_clicked_violet = !m_is_gold && clickIdx < 0;
+        return gold_clicked_gold || violet_clicked_violet;
+    }
+
 };

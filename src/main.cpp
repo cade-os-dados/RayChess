@@ -11,7 +11,7 @@ HighLightControler c_highlight;
 bool is_gold_turn = true;
 
 using namespace std;
-typedef vector<shared_ptr<Peca>> pecas;
+// typedef vector<shared_ptr<Peca>> pecas;
 pecas InitPecas(bool is_gold, InfinityMove* move)
 {
     pecas pecas;
@@ -52,6 +52,8 @@ int main()
     Color cartao_color = GOLD;
 
     std::vector<std::tuple<int,int>> cache_possible_moves;
+    c_highlight.SetPieces(&gold,true);
+    c_highlight.SetPieces(&violet,false);
     
     // bool debug = true;
     while(!WindowShouldClose())
@@ -91,10 +93,8 @@ int main()
             int where_clicked = board.CheckWhereCliked();
 
             // caso gold
-            if(where_clicked > 0 && is_gold_turn){
+            if(!c_highlight.is_on() && where_clicked > 0 && is_gold_turn){
                 c_highlight.Change(true);
-                c_highlight.HighlightedColorIsGold(true);
-                c_highlight.setPiece(gold[where_clicked-1]);
                 c_highlight.setPieceIndex(where_clicked);
                 auto [x,y] = c_highlight.getPiece() -> coords();
                 auto [i,j] = board.from_coord(x,y);
@@ -108,10 +108,8 @@ int main()
             }
 
             // caso violet
-            if(where_clicked < 0 && !is_gold_turn){
+            if(!c_highlight.is_on() && where_clicked < 0 && !is_gold_turn){
                 c_highlight.Change(true);
-                c_highlight.HighlightedColorIsGold(false);
-                c_highlight.setPiece(violet[abs(where_clicked)-1]);
                 c_highlight.setPieceIndex(where_clicked);
                 auto [x,y] = c_highlight.getPiece() -> coords();
                 auto [i,j] = board.from_coord(x,y);
@@ -128,9 +126,13 @@ int main()
             {
                 if(c_highlight.DoubleClickedOnPiece(where_clicked) || 
                     where_clicked != c_highlight.getPieceIndex() 
+                    // !c_highlight.ClickedSameTeam(where_clicked)
                 ){
+                    std::cout << "Double Clicked?: " << c_highlight.DoubleClickedOnPiece(where_clicked) << std::endl;
+                    std::cout << "ClickedSameTeam?: " << c_highlight.ClickedSameTeam(where_clicked) << std::endl;
                     c_highlight.UpdateClicked(false);
                 }
+
 
                 if (c_highlight.Unhighlight())
                 {

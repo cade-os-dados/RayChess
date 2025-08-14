@@ -10,6 +10,6 @@ Check Mate, não tem para onde o Rei Correr...
 
 Ou simplesmente, eliminaram o rei
 
-## Otimização
+## Otimização (V)
 
 Bom para otimizar, acho melhor simplesmente setar uma bool em todas as pieces de, se é para renderizar ou não. Assim, não precisa ficar trocando a peça por NULL. Também precisamos colocar um método para resetar as posições da peça, que são as mesmas de quando a inicializa...

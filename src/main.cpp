@@ -52,6 +52,7 @@ int main()
     pecas violet_eliminados;
     Color cartao_color = GOLD;
     GamePoints points;
+    bool reset = false;
 
     std::vector<std::tuple<int,int>> cache_possible_moves;
     c_highlight.SetPieces(&gold,true);
@@ -194,9 +195,9 @@ int main()
                         
                         int piece = board.Where(xi,ji);
                         if(piece < 0 && c_highlight.IsGold())
-                            violet[abs(piece)-1] = NULL;
+                            violet[abs(piece)-1] -> Kill();
                         if(piece > 0 && !c_highlight.IsGold())
-                            gold[piece-1] = NULL;
+                            gold[piece-1] -> Kill();
 
                         c_highlight.getPiece() -> Move({(float)xk, (float)jk});
                         board.RegisterPosition(xi,ji,c_highlight.getPieceIndex());
@@ -206,15 +207,22 @@ int main()
                         // rei derrotado
                         if(piece == 5 && !c_highlight.IsGold()){
                             points.AddViolet();
-                            board.ResetPositions();
-                            gold = InitPecas(true, &move);
-                            violet = InitPecas(false, &move);
+                            reset = true;
                         }
                         if(piece == -5 && c_highlight.IsGold()){
                             points.AddGold();
+                            reset = true;
+                        }
+                        // resetar todo o jogo!
+                        if(reset){
                             board.ResetPositions();
-                            gold = InitPecas(true, &move);
-                            violet = InitPecas(false, &move);
+                            for(auto piece : gold){
+                                piece -> ReSpawn();
+                            }
+                            for(auto piece : violet){
+                                piece -> ReSpawn();
+                            }
+                            reset = false;
                         }
                         break;
                     }

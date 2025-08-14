@@ -26,9 +26,11 @@ Texture2D load_texture(bool gold, const char* path)
 class Peca {
 protected:
     Texture2D texture;
+    size_t OriginalPlace[2];
     float m_width, m_height;
     bool is_gold;
     InfinityMove* move;
+    bool active = true;
 public:
     Peca(bool gold, const char* imagePath, float height_if_gold, float height_if_violet, InfinityMove* mv) 
     {
@@ -37,7 +39,11 @@ public:
         is_gold = gold; move = mv;
     }
     virtual ~Peca() { UnloadTexture(texture); }
-    virtual void Draw() = 0; // Método virtual puro para obrigar as subclasses a implementar
+    void Draw(){
+        if(active){
+            DrawResize(texture, {m_width, m_height, 100, 75});
+        }
+    }
     virtual VecCoords PossibleMoveCoords(int i, int j) = 0;
     std::tuple<int,int> coords(void){return std::make_tuple(m_width, m_height);}
     void Move(Vector2 new_pos)
@@ -45,22 +51,27 @@ public:
         m_width = new_pos.x;
         m_height = new_pos.y;
     }
-};
-
-class Peao : public Peca {
-private:
-    size_t OriginalPlace[2];
-public:
-    Peao(bool gold, int i, InfinityMove* mv) : Peca(gold, "img/Sprite-0001.png", 75, 6*75, mv){
-        m_width = (float)100*i; 
+    void Kill(){
+        active = false;
+    }
+    void ReSpawn(){
+        active = true;
+        m_width = OriginalPlace[0];
+        m_height = OriginalPlace[1];
+    }
+    void RegisterOriginalPlace(){
         OriginalPlace[0] = m_width;
         OriginalPlace[1] = m_height;
     }
-    void Draw() override
-    {
-        DrawResize(texture,{m_width,m_height,100,75});
-    }
+    
+};
 
+class Peao : public Peca {
+public:
+    Peao(bool gold, int i, InfinityMove* mv) : Peca(gold, "img/Sprite-0001.png", 75, 6*75, mv){
+        m_width = (float)100*i; 
+        this->RegisterOriginalPlace();
+    }
     bool isOnInitialPosition(void)
     {
         return (m_width == OriginalPlace[0] && m_height == OriginalPlace[1]);
@@ -117,10 +128,7 @@ class Cavalo : public Peca {
 public:
     Cavalo(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0002.png", 0, 7*75, mv){
         m_width = left ? 100 : 600;
-    }
-    void Draw() override
-    {
-        DrawResize(texture, {m_width, m_height, 100, 75});
+        this->RegisterOriginalPlace();
     }
 
     VecCoords PossibleMoveCoords(int i, int j) override
@@ -146,10 +154,9 @@ public:
 
 class Torre : public Peca {
 public:
-    Torre(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0003.png", 0, 7*75, mv){m_width = left ? 0 : 700;}
-    void Draw() override
-    {
-        DrawResize(texture, {m_width, m_height, 100, 75});
+    Torre(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0003.png", 0, 7*75, mv){
+        m_width = left ? 0 : 700;
+        this->RegisterOriginalPlace();
     }
 
     VecCoords PossibleMoveCoords(int i, int j) override
@@ -167,10 +174,9 @@ public:
 
 class Bispo : public Peca {
 public:
-    Bispo(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0004.png", 0, 7*75, mv){ m_width = left ? 200 : 500;}
-    void Draw() override
-    {
-        DrawResize(texture, {m_width, m_height, 100, 75});
+    Bispo(bool gold, bool left, InfinityMove* mv) : Peca(gold, "img/Sprite-0004.png", 0, 7*75, mv){ 
+        m_width = left ? 200 : 500;
+        this->RegisterOriginalPlace();
     }
 
     VecCoords PossibleMoveCoords(int i, int j) override 
@@ -188,10 +194,9 @@ public:
 
 class Rainha : public Peca {
 public:
-    Rainha(bool gold, InfinityMove* mv) : Peca(gold, "img/Sprite-0005.png", 0, 7*75, mv){m_width = 300;}
-    void Draw() override
-    {
-        DrawResize(texture, {m_width, m_height, 100, 75});
+    Rainha(bool gold, InfinityMove* mv) : Peca(gold, "img/Sprite-0005.png", 0, 7*75, mv){
+        m_width = 300;
+        this->RegisterOriginalPlace();
     }
     VecCoords PossibleMoveCoords(int i, int j) override 
     {
@@ -212,10 +217,9 @@ public:
 
 class Rei : public Peca {
 public:
-    Rei(bool gold, InfinityMove* mv) : Peca(gold, "img/Sprite-0006.png", 0, 7*75, mv){m_width = 400;}
-    void Draw() override
-    {
-        DrawResize(texture, {m_width, m_height, 100, 75});
+    Rei(bool gold, InfinityMove* mv) : Peca(gold, "img/Sprite-0006.png", 0, 7*75, mv){
+        m_width = 400;
+        this->RegisterOriginalPlace();
     }
     VecCoords PossibleMoveCoords(int i, int j) override
     {

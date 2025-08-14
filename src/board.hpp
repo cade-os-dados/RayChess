@@ -25,6 +25,11 @@ private:
     Color originalCelColors[8][8];
 public:
     Board(int w, int h, int len) : x(w), y(h), n(len) {
+        this -> ResetPositions();
+        this -> setupColors();
+    }
+    void ResetPositions()
+    {
         for(int i = 0; i < 8; i++){
             for(int j = 0; j < 8; j++){
                 int value;
@@ -39,8 +44,8 @@ public:
                 cels[i][j] = value;
             }
         }
-        setupColors();
     }
+
     void setupColors(void){
         int c = 0;
         for(int i = 0; i < n; i++) // cols

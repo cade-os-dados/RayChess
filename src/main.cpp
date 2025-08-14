@@ -4,6 +4,7 @@
 #include <memory>
 // #include "board.hpp"
 #include "highlight.hpp"
+#include "points.hpp"
 
 const int W = 800;
 const int H = 600;
@@ -50,6 +51,7 @@ int main()
     pecas gold_eliminados;
     pecas violet_eliminados;
     Color cartao_color = GOLD;
+    GamePoints points;
 
     std::vector<std::tuple<int,int>> cache_possible_moves;
     c_highlight.SetPieces(&gold,true);
@@ -77,6 +79,12 @@ int main()
         DrawText("QUEM JOGA: ", 10, H+10, 20, WHITE);
         DrawRectangle(10,H+40,20,20,cartao_color);
         DrawText(texto,40,H+40,20,WHITE);
+
+        DrawRectangle(200,H+10,20,20,GOLD);
+        DrawRectangle(200,H+40,20,20,VIOLET);
+        DrawText(points.GoldPoints(), 240, H+10, 20, WHITE);
+        DrawText(points.VioletPoints(), 240, H+40, 20, WHITE); 
+
 
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -194,6 +202,20 @@ int main()
                         board.RegisterPosition(xi,ji,c_highlight.getPieceIndex());
                         c_highlight.Change(false);
                         is_gold_turn = !is_gold_turn;
+
+                        // rei derrotado
+                        if(piece == 5 && !c_highlight.IsGold()){
+                            points.AddViolet();
+                            board.ResetPositions();
+                            gold = InitPecas(true, &move);
+                            violet = InitPecas(false, &move);
+                        }
+                        if(piece == -5 && c_highlight.IsGold()){
+                            points.AddGold();
+                            board.ResetPositions();
+                            gold = InitPecas(true, &move);
+                            violet = InitPecas(false, &move);
+                        }
                         break;
                     }
                 }

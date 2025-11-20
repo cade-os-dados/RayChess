@@ -36,6 +36,7 @@ int main()
     std::vector<std::tuple<int,int>> cache_possible_moves;
     c_highlight.SetPieces(&gold,true);
     c_highlight.SetPieces(&violet,false);
+    c_highlight.SetBoardPtr(&board);
     
     // bool debug = true;
     while(!WindowShouldClose())
@@ -78,63 +79,15 @@ int main()
             auto [a,b] = board.from_coord(mousePosition.x, mousePosition.y);
             
             int where_clicked = board.CheckWhereCliked();
-            c_highlight.setHightlight(where_clicked, is_gold_turn, cache_possible_moves, board);
+            c_highlight.setHighlight(where_clicked, is_gold_turn, cache_possible_moves);
 
             if(c_highlight.is_on())
             {
-                if(!c_highlight.DoubleClickedOnPiece(where_clicked) &&
-                    c_highlight.ClickedSameTeam(where_clicked)
-                ){
-                    // backup everything but rehighlight...
-                    c_highlight.setReHighlight(true);
-                    
-                }else{
-                    std::cout << "Double Clicked?: " << c_highlight.DoubleClickedOnPiece(where_clicked) << std::endl;
-                    std::cout << "ClickedSameTeam?: " << c_highlight.ClickedSameTeam(where_clicked) << std::endl;
-                    c_highlight.UpdateClicked(false);
-                }
-
-
-                if (c_highlight.Unhighlight())
+                if(c_highlight.CheckReHighlight(where_clicked))
                 {
-                    board.backupAllCellColor();
-                    c_highlight.Change(false);
+                    c_highlight.ReHighlight(where_clicked, is_gold_turn, cache_possible_moves);
                 }
-
-                if(c_highlight.ReHighlight()){
-                    c_highlight.Change(true);
-                    c_highlight.setReHighlight(false);
-                    board.backupAllCellColor();
-
-                    // highlight again...
-                    if(where_clicked > 0 && is_gold_turn){
-                        c_highlight.Change(true);
-                        c_highlight.setPieceIndex(where_clicked);
-                        auto [x,y] = c_highlight.getPiece() -> coords();
-                        auto [i,j] = board.from_coord(x,y);
-                        cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                        board.Highlight(cache_possible_moves, 1);
-                        
-                        /* Se não há movimentos possíveis para a peça, então sequer aciona o sistema de highlight... */
-                        if (cache_possible_moves.empty()){
-                            c_highlight.Change(false);
-                        }
-                    }
-
-                    if(where_clicked < 0 && !is_gold_turn){
-                        c_highlight.Change(true);
-                        c_highlight.setPieceIndex(where_clicked);
-                        auto [x,y] = c_highlight.getPiece() -> coords();
-                        auto [i,j] = board.from_coord(x,y);
-                        cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                        board.Highlight(cache_possible_moves, 0);
-
-                        if (cache_possible_moves.empty()){
-                            c_highlight.Change(false);
-                        }
-                    }
-                }
-
+                
                 auto [xk,jk] = board.trunc_coord(mousePosition.x,mousePosition.y);
                 for (auto [xi,ji] : cache_possible_moves){
                     if(a == xi && b == ji){

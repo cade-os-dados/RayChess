@@ -8,93 +8,111 @@
 class HighLightControler
 {
 private:
-    bool clicked, on, rehighlight;
+    bool clicked{false}, on{false};
     pecas *violet, *gold;
-    int idx, nclicks;
+    Board* board;
+    int idx, nclicks{0};
 public:
+    void setPieceIndex(int index){idx = index;}
+    void SetBoardPtr(Board* board_ptr){board = board_ptr;}
     void SetPieces(pecas *pecas_, bool gold){
-        if(gold){
-            this->gold = pecas_;
-        }else{
-            this->violet = pecas_;
-        }
+        if(gold) this->gold = pecas_;
+        else this->violet = pecas_;
     }
-    HighLightControler(void)
-    {
-        clicked = false;
-        nclicks = 0;
-        rehighlight = false;
-    }
+
+    // control if highlight is on
     void Activate(){on=true;}
     void Deactivate(){on=false;}
     void Change(bool on_){on = on_;}
-    bool IsGold(void){return this->idx > 0;}
+
+    // getters
     bool is_on(void){return on;}
-    bool to_change(int where_clicked, bool is_gold_turn)
-    {
-        if(on) return false;
-        bool is_gold = where_clicked > 0;
-        bool is_violet = where_clicked < 0;
-        return (is_gold_turn && is_gold) 
-            || (!is_gold_turn && is_violet);
+    bool IsGold(void){return this->idx > 0;}
+    int GetNClicks(){return nclicks;}
+    VecCoords GetMoves(int i, int j){return getPiece() -> PossibleMoveCoords(i,j);}
+    int getPieceIndex(void){return idx;}
+    std::shared_ptr<Peca> getPiece(void){
+        if (idx == 0) return nullptr;
+        else if (idx > 0) return (*this->gold)[idx-1];
+        else if (idx < 0) return (*this->violet)[abs(idx)-1];
     }
 
-    void setHightlight(
+    // feature functions
+    void setBoardColor(  
         int where_clicked, 
         bool is_gold_turn,
-        VecCoords& cache_possible_moves,
-        Board& board
+        VecCoords& cache_possible_moves
+    ){
+        this -> setPieceIndex(where_clicked); // altera o índice da peça highlightada
+        auto piece = this -> getPiece();
+        auto [i,j] = board -> from_coord(piece -> coords()); // pega os indices da peça em termos de i,j
+        cache_possible_moves = piece -> PossibleMoveCoords(i,j); // depois podemos modificar para gerar essas coordenadas diretamente pela api da peça
+
+        if(cache_possible_moves.empty())
+        {
+            this -> Deactivate();
+            return;
+        }
+
+        this -> Activate();
+        board -> Highlight(cache_possible_moves, is_gold_turn);
+    }
+
+    void setHighlight(
+        int where_clicked, 
+        bool is_gold_turn,
+        VecCoords& cache_possible_moves
     ){
         if(on) return; // already on - ignore
         bool highlight_gold = where_clicked > 0 && is_gold_turn;
         bool highlight_violet = where_clicked < 0 && !is_gold_turn;
         if(!highlight_gold && !highlight_violet) return; // nada a alterar
         
-        this -> setPieceIndex(where_clicked); // altera o índice da peça highlightada
-        auto piece = this -> getPiece();
-        auto [i,j] = board.from_coord(piece -> coords()); // pega os indices da peça em termos de i,j
-        cache_possible_moves = piece -> PossibleMoveCoords(i,j); // depois podemos modificar para gerar essas coordenadas diretamente pela api da peça
+        this -> setBoardColor(where_clicked, is_gold_turn, cache_possible_moves);
+    }
 
-        if(!cache_possible_moves.empty())
+
+    void Unhighlight(void){
+        if(!clicked)
         {
-             this -> Activate();
-             board.Highlight(cache_possible_moves, is_gold_turn);
+            board -> backupAllCellColor();
+            on = false;
+        }
+    }
+    void ReHighlight(        
+        int where_clicked, 
+        bool is_gold_turn,
+        VecCoords& cache_possible_moves)
+    {
+        this -> Activate();
+        board -> backupAllCellColor();
+        this -> setBoardColor(where_clicked,is_gold_turn,cache_possible_moves);
+    }
+    bool CheckReHighlight(int where_clicked)
+    {
+        bool condition = !DoubleClickedOnPiece(where_clicked) &&
+            ClickedSameTeam(where_clicked);
+
+        if(condition) return true;
+        else
+        {
+            if(false) // debug
+            {
+                std::cout << "Double Clicked?: " << DoubleClickedOnPiece(where_clicked) << std::endl;
+                std::cout << "ClickedSameTeam?: " << ClickedSameTeam(where_clicked) << std::endl;
+            }
+            this -> UpdateClicked(false);
+            this -> Unhighlight();
+            return false;
         }
     }
 
-    int GetNClicks(){
-        return nclicks;
-    }
+    // control functions
     void UpdateClicked(bool clicou)
     {
         clicked = clicou;
-        if(clicou == false)
-            nclicks = 0;
+        if(clicou == false) nclicks = 0;
     }
-    bool Unhighlight(void){
-        return !clicked;
-    }
-    bool ReHighlight(void){
-        return rehighlight;
-    }
-    int getPieceIndex(void){return idx;}
-    std::shared_ptr<Peca> getPiece(void){
-        if (idx == 0) return nullptr;
-        else if (idx > 0){
-            return (*this->gold)[idx-1];
-        }
-        else if (idx < 0){
-            return (*this->violet)[abs(idx)-1];
-        }
-    }
-
-    void setPieceIndex(int index){idx = index;}
-    void setReHighlight(bool value){rehighlight = value;}
-    VecCoords GetMoves(int i, int j)
-    {
-        return this -> getPiece() -> PossibleMoveCoords(i,j);
-    }
-
     // conditions
     int DoubleClickedOnPiece(int clickIdx)
     {
@@ -106,5 +124,4 @@ public:
         bool violet_clicked_violet = !this->IsGold() && clickIdx < 0;
         return gold_clicked_gold || violet_clicked_violet;
     }
-
 };

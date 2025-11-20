@@ -128,6 +128,11 @@ public:
         auto [a,b] = trunc_coord(i, j);
         return std::make_tuple((int)b/y, (int)a/x);
     }
+    std::tuple<int,int> from_coord(std::tuple<int,int> coord)
+    {
+        auto [a,b] = trunc_coord(std::get<0>(coord),std::get<1>(coord));
+        return std::make_tuple((int)b/y, (int)a/x);
+    }
 
     void changeCellColor(int i, int j, Color color){
         celColors[i][j] = color;

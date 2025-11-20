@@ -2,7 +2,6 @@
 #include <raylib.h>
 #include <vector>
 #include <memory>
-// #include "board.hpp"
 #include "highlight.hpp"
 #include "points.hpp"
 
@@ -12,23 +11,6 @@ HighLightControler c_highlight;
 bool is_gold_turn = true;
 
 using namespace std;
-// typedef vector<shared_ptr<Peca>> pecas;
-pecas InitPecas(bool is_gold, InfinityMove* move)
-{
-    pecas pecas;
-    pecas.push_back(make_shared<Torre>(is_gold, true, move));
-    pecas.push_back(make_shared<Cavalo>(is_gold, true, move));
-    pecas.push_back(make_shared<Bispo>(is_gold,true, move)); 
-    pecas.push_back(make_shared<Rainha>(is_gold, move));
-    pecas.push_back(make_shared<Rei>(is_gold, move));
-    pecas.push_back(make_shared<Bispo>(is_gold, false, move));
-    pecas.push_back(make_shared<Cavalo>(is_gold, false, move));
-    pecas.push_back(make_shared<Torre>(is_gold, false, move));
-    for(int i = 0; i < 8; i++){
-        pecas.push_back(make_shared<Peao>(is_gold,i,move)); // PEAO
-    }
-    return pecas;
-}
 
 int main()
 {
@@ -95,38 +77,8 @@ int main()
             std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
             auto [a,b] = board.from_coord(mousePosition.x, mousePosition.y);
             
-            // exemplo - clicou fora
             int where_clicked = board.CheckWhereCliked();
-
-            // caso gold
-            if(!c_highlight.is_on() && where_clicked > 0 && is_gold_turn){
-                c_highlight.Change(true);
-                c_highlight.setPieceIndex(where_clicked);
-                auto [x,y] = c_highlight.getPiece() -> coords();
-                auto [i,j] = board.from_coord(x,y);
-                cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                board.Highlight(cache_possible_moves, 1);
-                
-                /* Se não há movimentos possíveis para a peça, então sequer aciona o sistema de highlight... */
-                if (cache_possible_moves.empty()){
-                    c_highlight.Change(false);
-                }
-            }
-
-            // caso violet
-            if(!c_highlight.is_on() && where_clicked < 0 && !is_gold_turn){
-                c_highlight.Change(true);
-                c_highlight.setPieceIndex(where_clicked);
-                auto [x,y] = c_highlight.getPiece() -> coords();
-                auto [i,j] = board.from_coord(x,y);
-                cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                board.Highlight(cache_possible_moves, 0);
-
-                if (cache_possible_moves.empty()){
-                    c_highlight.Change(false);
-                }
-            }
-
+            c_highlight.setHightlight(where_clicked, is_gold_turn, cache_possible_moves, board);
 
             if(c_highlight.is_on())
             {
@@ -183,11 +135,11 @@ int main()
                     }
                 }
 
+                auto [xk,jk] = board.trunc_coord(mousePosition.x,mousePosition.y);
                 for (auto [xi,ji] : cache_possible_moves){
                     if(a == xi && b == ji){
-                        auto [xk,jk] = board.trunc_coord(mousePosition.x,mousePosition.y);
-                        auto [act_x, act_y] = c_highlight.getPiece() -> coords();
-                        auto [act_xx,act_yy] = board.from_coord(act_x,act_y);
+                        
+                        auto [act_xx,act_yy] = board.from_coord(c_highlight.getPiece() -> coords());
                         board.RegisterPosition(act_xx, act_yy, 0);
                         
                         int piece = board.Where(xi,ji);

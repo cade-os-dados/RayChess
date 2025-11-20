@@ -1,8 +1,9 @@
 #pragma once
 #include "pieces.hpp"
 #include <memory>
+#include "types.hpp"
 
-typedef std::vector<std::shared_ptr<Peca>> pecas;
+// typedef std::vector<std::shared_ptr<Peca>> pecas;
 
 class HighLightControler
 {
@@ -24,10 +25,41 @@ public:
         nclicks = 0;
         rehighlight = false;
     }
-    void Change(bool changer){on = changer;}
+    void Activate(){on=true;}
+    void Deactivate(){on=false;}
+    void Change(bool on_){on = on_;}
     bool IsGold(void){return this->idx > 0;}
-    bool is_on(void){
-        return on;
+    bool is_on(void){return on;}
+    bool to_change(int where_clicked, bool is_gold_turn)
+    {
+        if(on) return false;
+        bool is_gold = where_clicked > 0;
+        bool is_violet = where_clicked < 0;
+        return (is_gold_turn && is_gold) 
+            || (!is_gold_turn && is_violet);
+    }
+
+    void setHightlight(
+        int where_clicked, 
+        bool is_gold_turn,
+        VecCoords& cache_possible_moves,
+        Board& board
+    ){
+        if(on) return; // already on - ignore
+        bool highlight_gold = where_clicked > 0 && is_gold_turn;
+        bool highlight_violet = where_clicked < 0 && !is_gold_turn;
+        if(!highlight_gold && !highlight_violet) return; // nada a alterar
+        
+        this -> setPieceIndex(where_clicked); // altera o índice da peça highlightada
+        auto piece = this -> getPiece();
+        auto [i,j] = board.from_coord(piece -> coords()); // pega os indices da peça em termos de i,j
+        cache_possible_moves = piece -> PossibleMoveCoords(i,j); // depois podemos modificar para gerar essas coordenadas diretamente pela api da peça
+
+        if(!cache_possible_moves.empty())
+        {
+             this -> Activate();
+             board.Highlight(cache_possible_moves, is_gold_turn);
+        }
     }
 
     int GetNClicks(){
@@ -58,6 +90,10 @@ public:
 
     void setPieceIndex(int index){idx = index;}
     void setReHighlight(bool value){rehighlight = value;}
+    VecCoords GetMoves(int i, int j)
+    {
+        return this -> getPiece() -> PossibleMoveCoords(i,j);
+    }
 
     // conditions
     int DoubleClickedOnPiece(int clickIdx)

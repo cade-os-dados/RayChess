@@ -33,7 +33,6 @@ pecas InitPecas(bool is_gold, InfinityMove* move)
 int main()
 {
     // ---- TABULEIRO ----
-    
     int n = 8;
     int cel_width = (int) (W / n);
     int cel_height = (int) (H / n);
@@ -48,8 +47,6 @@ int main()
 
     pecas gold = InitPecas(true, &move);
     pecas violet = InitPecas(false, &move);
-    pecas gold_eliminados;
-    pecas violet_eliminados;
     Color cartao_color = GOLD;
     GamePoints points;
     bool reset = false;
@@ -66,8 +63,8 @@ int main()
         
         board.Draw();
         // ---- PEÇAS ----
-        for (const auto& peca : gold) { if(peca != NULL) peca->Draw(); }
-        for (const auto& peca : violet) { if(peca != NULL) peca->Draw(); }
+        for (const auto& peca : gold) { peca->Draw(); }
+        for (const auto& peca : violet) { peca->Draw(); }
 
         /* MENU EM BAIXO DO TABULEIRO */
         cartao_color = is_gold_turn ? GOLD : VIOLET;

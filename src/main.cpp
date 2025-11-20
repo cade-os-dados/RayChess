@@ -215,6 +215,7 @@ int main()
                         }
                         // resetar todo o jogo!
                         if(reset){
+                            is_gold_turn = true;
                             board.ResetPositions();
                             for(auto piece : gold){
                                 piece -> ReSpawn();

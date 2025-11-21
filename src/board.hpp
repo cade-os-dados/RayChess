@@ -93,9 +93,10 @@ public:
                 
         }
     }
-    void RegisterPosition(int i, int k, int gold){
-        cels[i][k] = gold;
+    void RegisterPosition(int i, int k, int pos){
+        cels[i][k] = pos;
     }
+    void CleanPosition(int i, int k){cels[i][k] = 0;}
     Action VerifyPosition(int i, int k, int gold) const{
         if(i < 0 || k < 0 || i > 7 || k > 7)
             return Action::unacessable;

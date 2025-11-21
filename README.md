@@ -1,15 +1,18 @@
 # Movimentação
 
 1. Dar Highlight na peça que está selecionada, além dos possíveis movimentos dela (que já está implementado)
+- pode ser só um retangulo vermelho, algo bem simples!
 
 2. Simplificar a API com um Game/GameControler que faça ficar mais fácil reaplicar alguns trechos de código que se repetem...
 
-# Condição de Término do Jogo (V)
+3. Alterar a lógica para o jogo funcionar com qualquer resolução (está hardcoded a posição das peças)
 
-Check Mate, não tem para onde o Rei Correr...
+4. Online - enviar apenas o movimento das peças para o oponente
 
-Ou simplesmente, eliminaram o rei
+5. Chat Online - temos que desenvolver a api, não deve ser muito difícil - deve rodar em paralelo... e o game controle tem que verificar colisão para evitar jogadas incorretas
 
-## Otimização (V)
+6. Está faltando a lógica de troca de peças quando o peão chega no final e o movimento 'roque'
 
-Bom para otimizar, acho melhor simplesmente setar uma bool em todas as pieces de, se é para renderizar ou não. Assim, não precisa ficar trocando a peça por NULL. Também precisamos colocar um método para resetar as posições da peça, que são as mesmas de quando a inicializa...
+7. Exibir um aviso quando o rei está em cheque
+
+8. Pausar o jogo no cheque-mate

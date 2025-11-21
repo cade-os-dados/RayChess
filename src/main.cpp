@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 #include "highlight.hpp"
-#include "points.hpp"
+#include "game.hpp"
 
 const int W = 800;
 const int H = 600;
@@ -30,13 +30,13 @@ int main()
     pecas gold = InitPecas(true, &move);
     pecas violet = InitPecas(false, &move);
     Color cartao_color = GOLD;
-    GamePoints points;
-    bool reset = false;
 
     std::vector<std::tuple<int,int>> cache_possible_moves;
     c_highlight.SetPieces(&gold,true);
     c_highlight.SetPieces(&violet,false);
     c_highlight.SetBoardPtr(&board);
+
+    Game game(&gold, &violet, &is_gold_turn, &board);
     
     // bool debug = true;
     while(!WindowShouldClose())
@@ -63,9 +63,8 @@ int main()
 
         DrawRectangle(200,H+10,20,20,GOLD);
         DrawRectangle(200,H+40,20,20,VIOLET);
-        DrawText(points.GoldPoints(), 240, H+10, 20, WHITE);
-        DrawText(points.VioletPoints(), 240, H+40, 20, WHITE); 
-
+        DrawText(game.GoldPoints(), 240, H+10, 20, WHITE);
+        DrawText(game.VioletPoints(), 240, H+40, 20, WHITE); 
 
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -88,45 +87,20 @@ int main()
                     c_highlight.ReHighlight(where_clicked, is_gold_turn, cache_possible_moves);
                 }
                 
-                auto [xk,jk] = board.trunc_coord(mousePosition.x,mousePosition.y);
+                game.GetMatrixPos(mousePosition);
+                game.GetTruncatedPos(mousePosition);
+
                 for (auto [xi,ji] : cache_possible_moves){
-                    if(a == xi && b == ji){
+                    if(game.CanMove(xi, ji))
+                    {
+                        auto piece_ptr = c_highlight.getPiece();
+                        int piece_idx = c_highlight.getPieceIndex();
+                        bool is_gold_piece = c_highlight.IsGold();
                         
-                        auto [act_xx,act_yy] = board.from_coord(c_highlight.getPiece() -> coords());
-                        board.RegisterPosition(act_xx, act_yy, 0);
-                        
-                        int piece = board.Where(xi,ji);
-                        if(piece < 0 && c_highlight.IsGold())
-                            violet[abs(piece)-1] -> Kill();
-                        if(piece > 0 && !c_highlight.IsGold())
-                            gold[piece-1] -> Kill();
-
-                        c_highlight.getPiece() -> Move({(float)xk, (float)jk});
-                        board.RegisterPosition(xi,ji,c_highlight.getPieceIndex());
+                        int piece = game.Kill(is_gold_piece);
+                        game.Move(piece_ptr, piece_idx);
                         c_highlight.Change(false);
-                        is_gold_turn = !is_gold_turn;
-
-                        // rei derrotado
-                        if(piece == 5 && !c_highlight.IsGold()){
-                            points.AddViolet();
-                            reset = true;
-                        }
-                        if(piece == -5 && c_highlight.IsGold()){
-                            points.AddGold();
-                            reset = true;
-                        }
-                        // resetar todo o jogo!
-                        if(reset){
-                            is_gold_turn = true;
-                            board.ResetPositions();
-                            for(auto piece : gold){
-                                piece -> ReSpawn();
-                            }
-                            for(auto piece : violet){
-                                piece -> ReSpawn();
-                            }
-                            reset = false;
-                        }
+                        game.CheckEndGame(piece, is_gold_piece);
                         break;
                     }
                 }

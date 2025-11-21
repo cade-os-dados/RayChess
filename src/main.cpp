@@ -2,9 +2,8 @@
 #include <raylib.h>
 #include <vector>
 #include <memory>
-// #include "board.hpp"
 #include "highlight.hpp"
-#include "points.hpp"
+#include "game.hpp"
 
 const int W = 800;
 const int H = 600;
@@ -12,23 +11,6 @@ HighLightControler c_highlight;
 bool is_gold_turn = true;
 
 using namespace std;
-// typedef vector<shared_ptr<Peca>> pecas;
-pecas InitPecas(bool is_gold, InfinityMove* move)
-{
-    pecas pecas;
-    pecas.push_back(make_shared<Torre>(is_gold, true, move));
-    pecas.push_back(make_shared<Cavalo>(is_gold, true, move));
-    pecas.push_back(make_shared<Bispo>(is_gold,true, move)); 
-    pecas.push_back(make_shared<Rainha>(is_gold, move));
-    pecas.push_back(make_shared<Rei>(is_gold, move));
-    pecas.push_back(make_shared<Bispo>(is_gold, false, move));
-    pecas.push_back(make_shared<Cavalo>(is_gold, false, move));
-    pecas.push_back(make_shared<Torre>(is_gold, false, move));
-    for(int i = 0; i < 8; i++){
-        pecas.push_back(make_shared<Peao>(is_gold,i,move)); // PEAO
-    }
-    return pecas;
-}
 
 int main()
 {
@@ -48,12 +30,13 @@ int main()
     pecas gold = InitPecas(true, &move);
     pecas violet = InitPecas(false, &move);
     Color cartao_color = GOLD;
-    GamePoints points;
-    bool reset = false;
 
     std::vector<std::tuple<int,int>> cache_possible_moves;
     c_highlight.SetPieces(&gold,true);
     c_highlight.SetPieces(&violet,false);
+    c_highlight.SetBoardPtr(&board);
+
+    Game game(&gold, &violet, &is_gold_turn, &board);
     
     // bool debug = true;
     while(!WindowShouldClose())
@@ -80,9 +63,8 @@ int main()
 
         DrawRectangle(200,H+10,20,20,GOLD);
         DrawRectangle(200,H+40,20,20,VIOLET);
-        DrawText(points.GoldPoints(), 240, H+10, 20, WHITE);
-        DrawText(points.VioletPoints(), 240, H+40, 20, WHITE); 
-
+        DrawText(game.GoldPoints(), 240, H+10, 20, WHITE);
+        DrawText(game.VioletPoints(), 240, H+40, 20, WHITE); 
 
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -93,135 +75,29 @@ int main()
 
             Vector2 mousePosition = GetMousePosition();
             std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
-            auto [a,b] = board.from_coord(mousePosition.x, mousePosition.y);
             
-            // exemplo - clicou fora
             int where_clicked = board.CheckWhereCliked();
-
-            // caso gold
-            if(!c_highlight.is_on() && where_clicked > 0 && is_gold_turn){
-                c_highlight.Change(true);
-                c_highlight.setPieceIndex(where_clicked);
-                auto [x,y] = c_highlight.getPiece() -> coords();
-                auto [i,j] = board.from_coord(x,y);
-                cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                board.Highlight(cache_possible_moves, 1);
-                
-                /* Se não há movimentos possíveis para a peça, então sequer aciona o sistema de highlight... */
-                if (cache_possible_moves.empty()){
-                    c_highlight.Change(false);
-                }
-            }
-
-            // caso violet
-            if(!c_highlight.is_on() && where_clicked < 0 && !is_gold_turn){
-                c_highlight.Change(true);
-                c_highlight.setPieceIndex(where_clicked);
-                auto [x,y] = c_highlight.getPiece() -> coords();
-                auto [i,j] = board.from_coord(x,y);
-                cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                board.Highlight(cache_possible_moves, 0);
-
-                if (cache_possible_moves.empty()){
-                    c_highlight.Change(false);
-                }
-            }
-
+            c_highlight.setHighlight(where_clicked, is_gold_turn, cache_possible_moves);
 
             if(c_highlight.is_on())
             {
-                if(!c_highlight.DoubleClickedOnPiece(where_clicked) &&
-                    c_highlight.ClickedSameTeam(where_clicked)
-                ){
-                    // backup everything but rehighlight...
-                    c_highlight.setReHighlight(true);
-                    
-                }else{
-                    std::cout << "Double Clicked?: " << c_highlight.DoubleClickedOnPiece(where_clicked) << std::endl;
-                    std::cout << "ClickedSameTeam?: " << c_highlight.ClickedSameTeam(where_clicked) << std::endl;
-                    c_highlight.UpdateClicked(false);
-                }
-
-
-                if (c_highlight.Unhighlight())
+                if(c_highlight.CheckReHighlight(where_clicked))
                 {
-                    board.backupAllCellColor();
-                    c_highlight.Change(false);
+                    c_highlight.ReHighlight(where_clicked, is_gold_turn, cache_possible_moves);
                 }
+                
+                game.GetMatrixPos(mousePosition);
+                game.GetTruncatedPos(mousePosition);
 
-                if(c_highlight.ReHighlight()){
-                    c_highlight.Change(true);
-                    c_highlight.setReHighlight(false);
-                    board.backupAllCellColor();
-
-                    // highlight again...
-                    if(where_clicked > 0 && is_gold_turn){
-                        c_highlight.Change(true);
-                        c_highlight.setPieceIndex(where_clicked);
-                        auto [x,y] = c_highlight.getPiece() -> coords();
-                        auto [i,j] = board.from_coord(x,y);
-                        cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                        board.Highlight(cache_possible_moves, 1);
-                        
-                        /* Se não há movimentos possíveis para a peça, então sequer aciona o sistema de highlight... */
-                        if (cache_possible_moves.empty()){
-                            c_highlight.Change(false);
-                        }
-                    }
-
-                    if(where_clicked < 0 && !is_gold_turn){
-                        c_highlight.Change(true);
-                        c_highlight.setPieceIndex(where_clicked);
-                        auto [x,y] = c_highlight.getPiece() -> coords();
-                        auto [i,j] = board.from_coord(x,y);
-                        cache_possible_moves = c_highlight.getPiece() -> PossibleMoveCoords(i,j);
-                        board.Highlight(cache_possible_moves, 0);
-
-                        if (cache_possible_moves.empty()){
-                            c_highlight.Change(false);
-                        }
-                    }
-                }
-
-                for (auto [xi,ji] : cache_possible_moves){
-                    if(a == xi && b == ji){
-                        auto [xk,jk] = board.trunc_coord(mousePosition.x,mousePosition.y);
-                        auto [act_x, act_y] = c_highlight.getPiece() -> coords();
-                        auto [act_xx,act_yy] = board.from_coord(act_x,act_y);
-                        board.RegisterPosition(act_xx, act_yy, 0);
-                        
-                        int piece = board.Where(xi,ji);
-                        if(piece < 0 && c_highlight.IsGold())
-                            violet[abs(piece)-1] -> Kill();
-                        if(piece > 0 && !c_highlight.IsGold())
-                            gold[piece-1] -> Kill();
-
-                        c_highlight.getPiece() -> Move({(float)xk, (float)jk});
-                        board.RegisterPosition(xi,ji,c_highlight.getPieceIndex());
+                for (auto [x_mov,y_mov] : cache_possible_moves)
+                {
+                    if(game.CanMove(x_mov, y_mov))
+                    {
+                        auto [piece_ptr, piece_idx, is_gold_piece] = c_highlight.GetInfo();
+                        int piece = game.Kill(is_gold_piece);
+                        game.Move(piece_ptr, piece_idx);
                         c_highlight.Change(false);
-                        is_gold_turn = !is_gold_turn;
-
-                        // rei derrotado
-                        if(piece == 5 && !c_highlight.IsGold()){
-                            points.AddViolet();
-                            reset = true;
-                        }
-                        if(piece == -5 && c_highlight.IsGold()){
-                            points.AddGold();
-                            reset = true;
-                        }
-                        // resetar todo o jogo!
-                        if(reset){
-                            is_gold_turn = true;
-                            board.ResetPositions();
-                            for(auto piece : gold){
-                                piece -> ReSpawn();
-                            }
-                            for(auto piece : violet){
-                                piece -> ReSpawn();
-                            }
-                            reset = false;
-                        }
+                        game.CheckEndGame(piece, is_gold_piece);
                         break;
                     }
                 }

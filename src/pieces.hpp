@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include <iostream>
 #include "move.hpp"
+#include "types.hpp"
 
 void DrawResize(Texture2D texture, Rectangle new_size)
 {
@@ -23,48 +24,32 @@ Texture2D load_texture(bool gold, const char* path)
     return LoadTextureFromImage(image);
 }
 
-class Peca {
-protected:
-    Texture2D texture;
-    size_t OriginalPlace[2];
-    float m_width, m_height;
-    bool is_gold;
-    InfinityMove* move;
-    bool active = true;
-public:
-    Peca(bool gold, const char* imagePath, float height_if_gold, float height_if_violet, InfinityMove* mv) 
-    {
-        m_height = gold ? height_if_gold : height_if_violet;
-        texture = load_texture(gold, imagePath);
-        is_gold = gold; move = mv;
+Peca::Peca(bool gold, const char* imagePath, float height_if_gold, float height_if_violet, InfinityMove* mv) 
+{
+    m_height = gold ? height_if_gold : height_if_violet;
+    texture = load_texture(gold, imagePath);
+    is_gold = gold; move = mv;
+}
+void Peca::Draw(){
+    if(active){
+        DrawResize(texture, {m_width, m_height, 100, 75});
     }
-    virtual ~Peca() { UnloadTexture(texture); }
-    void Draw(){
-        if(active){
-            DrawResize(texture, {m_width, m_height, 100, 75});
-        }
-    }
-    virtual VecCoords PossibleMoveCoords(int i, int j) = 0;
-    std::tuple<int,int> coords(void){return std::make_tuple(m_width, m_height);}
-    void Move(Vector2 new_pos)
-    {
-        m_width = new_pos.x;
-        m_height = new_pos.y;
-    }
-    void Kill(){
-        active = false;
-    }
-    void ReSpawn(){
-        active = true;
-        m_width = OriginalPlace[0];
-        m_height = OriginalPlace[1];
-    }
-    void RegisterOriginalPlace(){
-        OriginalPlace[0] = m_width;
-        OriginalPlace[1] = m_height;
-    }
-    
-};
+}
+void Peca::Move(Vector2 new_pos)
+{
+    m_width = new_pos.x;
+    m_height = new_pos.y;
+}
+void Peca::Kill(){active = false;}
+void Peca::ReSpawn(){
+    active = true;
+    m_width = OriginalPlace[0];
+    m_height = OriginalPlace[1];
+}
+void Peca::RegisterOriginalPlace(){
+    OriginalPlace[0] = m_width;
+    OriginalPlace[1] = m_height;
+}
 
 class Peao : public Peca {
 public:
@@ -240,3 +225,20 @@ public:
         return coords;
     }
 };
+
+pecas InitPecas(bool is_gold, InfinityMove* move)
+{
+    pecas pecas;
+    pecas.push_back(std::make_shared<Torre>(is_gold, true, move));
+    pecas.push_back(std::make_shared<Cavalo>(is_gold, true, move));
+    pecas.push_back(std::make_shared<Bispo>(is_gold,true, move)); 
+    pecas.push_back(std::make_shared<Rainha>(is_gold, move));
+    pecas.push_back(std::make_shared<Rei>(is_gold, move));
+    pecas.push_back(std::make_shared<Bispo>(is_gold, false, move));
+    pecas.push_back(std::make_shared<Cavalo>(is_gold, false, move));
+    pecas.push_back(std::make_shared<Torre>(is_gold, false, move));
+    for(int i = 0; i < 8; i++){
+        pecas.push_back(std::make_shared<Peao>(is_gold,i,move)); // PEAO
+    }
+    return pecas;
+}

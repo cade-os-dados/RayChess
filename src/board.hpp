@@ -93,9 +93,10 @@ public:
                 
         }
     }
-    void RegisterPosition(int i, int k, int gold){
-        cels[i][k] = gold;
+    void RegisterPosition(int i, int k, int pos){
+        cels[i][k] = pos;
     }
+    void CleanPosition(int i, int k){cels[i][k] = 0;}
     Action VerifyPosition(int i, int k, int gold) const{
         if(i < 0 || k < 0 || i > 7 || k > 7)
             return Action::unacessable;
@@ -126,6 +127,11 @@ public:
     }
     std::tuple<int, int> from_coord(int i, int j){
         auto [a,b] = trunc_coord(i, j);
+        return std::make_tuple((int)b/y, (int)a/x);
+    }
+    std::tuple<int,int> from_coord(std::tuple<int,int> coord)
+    {
+        auto [a,b] = trunc_coord(std::get<0>(coord),std::get<1>(coord));
         return std::make_tuple((int)b/y, (int)a/x);
     }
 

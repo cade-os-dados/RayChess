@@ -75,7 +75,6 @@ int main()
 
             Vector2 mousePosition = GetMousePosition();
             std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
-            auto [a,b] = board.from_coord(mousePosition.x, mousePosition.y);
             
             int where_clicked = board.CheckWhereCliked();
             c_highlight.setHighlight(where_clicked, is_gold_turn, cache_possible_moves);
@@ -90,13 +89,11 @@ int main()
                 game.GetMatrixPos(mousePosition);
                 game.GetTruncatedPos(mousePosition);
 
-                for (auto [xi,ji] : cache_possible_moves){
-                    if(game.CanMove(xi, ji))
+                for (auto [x_mov,y_mov] : cache_possible_moves)
+                {
+                    if(game.CanMove(x_mov, y_mov))
                     {
-                        auto piece_ptr = c_highlight.getPiece();
-                        int piece_idx = c_highlight.getPieceIndex();
-                        bool is_gold_piece = c_highlight.IsGold();
-                        
+                        auto [piece_ptr, piece_idx, is_gold_piece] = c_highlight.GetInfo();
                         int piece = game.Kill(is_gold_piece);
                         game.Move(piece_ptr, piece_idx);
                         c_highlight.Change(false);

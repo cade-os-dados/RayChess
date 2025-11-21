@@ -36,6 +36,9 @@ public:
         else if (idx > 0) return (*this->gold)[idx-1];
         else if (idx < 0) return (*this->violet)[abs(idx)-1];
     }
+    std::tuple<std::shared_ptr<Peca>, int, bool> GetInfo(){
+        return std::make_tuple(getPiece(), getPieceIndex(), IsGold());
+    }
 
     // feature functions
     void setBoardColor(  

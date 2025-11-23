@@ -3,3 +3,4 @@
 .vscode/
 app
 raylib/
+include/

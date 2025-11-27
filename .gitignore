@@ -4,3 +4,8 @@
 app
 raylib/
 include/
+*.pem
+*.sst
+*.crt
+*.csr
+*.key

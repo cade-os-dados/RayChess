@@ -2,6 +2,7 @@
 *.a
 .vscode/
 app
+client
 raylib/
 include/
 *.pem

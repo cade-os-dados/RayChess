@@ -22,7 +22,7 @@ ssl_context load_ca()
     ssl_context ctx(ssl_context::tlsv13_client);
     try{ ctx.load_verify_file("resources/ca/server.crt"); }
     catch(const std::exception& e){ 
-        std::cout << "Não foi possível carregar o certificado do servidor, favor solicitar ao administrador o certificado e inserir no caminho ca/server.crt"; 
+        std::cout << "Não foi possível carregar o certificado do servidor, favor solicitar ao administrador o certificado e inserir no caminho resources/ca/server.crt"; 
     }
     ctx.set_verify_mode(boost::asio::ssl::verify_peer);
     return ctx;
@@ -41,8 +41,8 @@ inline bool run(std::string cmd) {
 }
 
 void generate_ca(std::string bin = "openssl") {
-    if(!fs::exists("resources/ca"))
-        fs::create_directories("resources/ca");
+    if(!fs::exists("ca"))
+        fs::create_directories("ca");
 
     bool no_changes = true;
 
@@ -60,11 +60,19 @@ void generate_ca(std::string bin = "openssl") {
 
     if (!fs::exists("resources/ca/server.crt")) {
         if (!run(bin+" x509 -req -in resources/ca/server.csr -signkey resources/ca/server.key "
-                 "-out resources/ca/server.crt -days 365 -extfile resources/server.cnf -extensions v3_req")) return;
+                 "-out resources/ca/server.crt -days 365 -extfile server.cnf -extensions v3_req")) return;
         std::cout << "Certificado assinado com sucesso!\n";
         no_changes = false;
     }
 
     if (no_changes)
         std::cout << "Certificado ja esta configurado!\n";
+}
+
+ssl_context server_ca()
+{
+    generate_ca();
+    ssl_context ctx(ssl_context::tlsv13_server);
+    set_ca(ctx);
+    return ctx;
 }

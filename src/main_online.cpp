@@ -4,7 +4,7 @@
 #include <memory>
 #include "highlight.hpp"
 #include "game.hpp"
-#include "net/server.hpp"
+#include "net/async_server.hpp"
 #include "net/parser.hpp"
 
 const int W = 800;
@@ -36,31 +36,12 @@ using namespace std;
 int main()
 {
     // NET SERVER
+
     boost::asio::io_context io_context;
-    tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 4433));
-    generate_ca();
-    auto ctx = context_with_ca();
 
-    Session session(io_context, acceptor, ctx);
-    std::cout << "Waiting for connection...\n";
-    session.handshake();
-    // while(session.IsActive())
-    // {
-    //     std::string mensagem = session.rcv();
-    //     std::cout << mensagem << std::endl;
-    //     if(is_sync_move(mensagem))
-    //     {
-    //         SyncMove move = parse(mensagem);
-    //         std::cout << "Move: " << move.piece << move.x << move.y << std::endl;
-    //     }
+    Server s(io_context, 4433);
 
-    //     std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-    //     session.write(make_daytime_string());
-    // }
-
-
-
-
+    std::thread th([&io_context]{io_context.run();}); // io_context.run();
 
     // ---- TABULEIRO ----
     int n = 8;
@@ -151,8 +132,7 @@ int main()
                             game.Move(piece_ptr, piece_idx);
 
                             // send across network
-                            if(session.IsActive()) 
-                                session.write(to_str({piece_idx, x_mov, y_mov}));
+                            response_queue.push(to_str({piece_idx, x_mov, y_mov}));
                             
                             c_highlight.Change(false);
                             game.CheckEndGame(piece, is_gold_piece);
@@ -168,12 +148,26 @@ int main()
             // terá que rodar numa thread separada e esperar o evento disparar
             // std::string response = session.rcv();
             // std::cout << response << std::endl;
-            if(notify) // notificacao assincrona!
+            if(!request_queue.empty()) // notificacao assincrona!
+            {
+                // melhorar a api...
+
+                // atualizar aqui
+                SyncMove move = parse(request_queue.pop());
+                printf("Move: %d -> (%d,%d)\n", move.piece, move.x, move.y);
+                int piece = game.Kill(false); // violet
+                board.CleanPosition(move.x,move.y);
+                auto [x,y] = board.from_coord(move.x,move.y);
+                violet[move.piece] -> Move({(float)x,(float)y});
+                board.RegisterPosition(move.x,move.y,move.piece);
                 is_player_turn = true;
+                is_gold_turn = true;
+            }
         }
         EndDrawing();
     }
 
+    th.join();
     CloseWindow();
     return 0;
 }

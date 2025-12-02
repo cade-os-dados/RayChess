@@ -3,7 +3,7 @@
 #include <memory>
 #include "ssl_security.hpp"
 
-#define DEBUG false
+#define DEBUG true
 
 using boost::asio::ip::tcp;
 namespace asio = boost::asio;
@@ -29,9 +29,10 @@ private:
     int max_retries{3}, retries{0};
     boost::asio::io_context io;
 public:
-    Client()
+    Client(boost::asio::ssl::verify_mode mode = boost::asio::ssl::verify_peer)
     {
         auto ctx = load_ca();
+        ctx.set_verify_mode(mode);
         ssl_stream = new SSL_stream(io, ctx);
     }
     ~Client(){ this -> shutdown(); delete ssl_stream; }

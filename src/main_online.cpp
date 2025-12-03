@@ -4,7 +4,7 @@
 #include <memory>
 #include "highlight.hpp"
 #include "game.hpp"
-#include "net/async_server.hpp"
+#include "net/sync_server.hpp"
 #include "net/parser.hpp"
 
 const int W = 800;
@@ -37,11 +37,12 @@ int main()
 {
     // NET SERVER
 
-    boost::asio::io_context io_context;
 
-    Server s(io_context, 4433);
-
-    std::thread th([&io_context]{io_context.run();}); // io_context.run();
+    std::thread th([]{
+        boost::asio::io_context io_context;
+        Server s(io_context, 4433);
+        io_context.run();
+    }); // io_context.run();
 
     // ---- TABULEIRO ----
     int n = 8;
@@ -132,7 +133,8 @@ int main()
                             game.Move(piece_ptr, piece_idx);
 
                             // send across network
-                            response_queue.push(to_str({piece_idx, x_mov, y_mov}));
+                            // response_queue.push(to_str({piece_idx, x_mov, y_mov}));
+                            push_and_notify(to_str({piece_idx,x_mov,y_mov}));
                             
                             c_highlight.Change(false);
                             game.CheckEndGame(piece, is_gold_piece);
@@ -155,11 +157,26 @@ int main()
                 // atualizar aqui
                 SyncMove move = parse(request_queue.pop());
                 printf("Move: %d -> (%d,%d)\n", move.piece, move.x, move.y);
-                int piece = game.Kill(false); // violet
+
+
+                // pegar o ponteiro da peça
+                // mover a peça
+
+
                 board.CleanPosition(move.x,move.y);
-                auto [x,y] = board.from_coord(move.x,move.y);
-                violet[move.piece] -> Move({(float)x,(float)y});
+                auto piece = violet[abs(move.piece)-1];
+                auto [x,y] = board.from_coord(piece -> coords());
+                board.CleanPosition(x,y);
+                auto [pos_x,pos_y] = board.to_coord(move.x,move.y);
+                piece -> Move({(float)pos_x, (float)pos_y});
                 board.RegisterPosition(move.x,move.y,move.piece);
+
+
+                // int piece = game.Kill(false); // violet
+                // board.CleanPosition(move.x,move.y);
+                // auto [x,y] = board.from_coord(move.x,move.y);
+                // violet[move.piece] -> Move({(float)x,(float)y});
+                // board.RegisterPosition(move.x,move.y,move.piece);
                 is_player_turn = true;
                 is_gold_turn = true;
             }

@@ -1,5 +1,6 @@
 #pragma once
 #include "raylib.h"
+#include "coord.hpp"
 #include <tuple>
 
 /*
@@ -97,6 +98,7 @@ public:
         cels[i][k] = pos;
     }
     void CleanPosition(int i, int k){cels[i][k] = 0;}
+    void CleanPosition(MatrixPosition pos){cels[pos.row][pos.col] = 0;}
     Action VerifyPosition(int i, int k, int gold) const{
         if(i < 0 || k < 0 || i > 7 || k > 7)
             return Action::unacessable;

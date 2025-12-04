@@ -20,13 +20,13 @@ struct SyncMove {
 
 bool is_sync_move(std::string_view string, std::cmatch& match)
 {
-    static const std::regex regex(R"(Move:\s*(\d+)\s*->\s*\((\d+),\s*(\d+)\))");
+    static const std::regex regex(R"(Move:\s*(-?\d+)\s*->\s*\((\d+),\s*(\d+)\))");
     return std::regex_match(string.begin(),string.end(), match, regex);
 }
 
 bool is_sync_move(std::string_view string)
 {
-    static const std::regex regex(R"(Move:\s*(\d+)\s*->\s*\((\d+),\s*(\d+)\))");
+    static const std::regex regex(R"(Move:\s*(-?\d+)\s*->\s*\((\d+),\s*(\d+)\))");
     return std::regex_match(string.begin(), string.end(), regex);
 }
 

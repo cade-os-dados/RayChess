@@ -6,9 +6,11 @@
 #include "game.hpp"
 #include "net/sync_server.hpp"
 #include "net/parser.hpp"
+#include "coord.hpp"
 
 const int W = 800;
 const int H = 600;
+CelDim cel = to_cel_dim({W,H});
 HighLightControler c_highlight;
 bool is_gold_turn = true;
 
@@ -155,28 +157,44 @@ int main()
                 // melhorar a api...
 
                 // atualizar aqui
-                SyncMove move = parse(request_queue.pop());
-                printf("Move: %d -> (%d,%d)\n", move.piece, move.x, move.y);
+                std::string message = request_queue.pop();
+                if(is_sync_move(message))
+                {
+                    SyncMove move = parse(message);
+                    printf("Move: %d -> (%d,%d)\n", move.piece, move.x, move.y);
 
 
-                // pegar o ponteiro da peça
-                // mover a peça
+                    // pegar o ponteiro da peça
+                    // mover a peça
 
+                    MatrixPosition new_pos{move.x,move.y};
+                    // board.CleanPosition(new_pos); // errado
+                    // tem que dar kill apenas se tiver uma peça
 
-                board.CleanPosition(move.x,move.y);
-                auto piece = violet[abs(move.piece)-1];
-                auto [x,y] = board.from_coord(piece -> coords());
-                board.CleanPosition(x,y);
-                auto [pos_x,pos_y] = board.to_coord(move.x,move.y);
-                piece -> Move({(float)pos_x, (float)pos_y});
-                board.RegisterPosition(move.x,move.y,move.piece);
+                    // board.CleanPosition(move.x,move.y);
+                    auto piece = violet[abs(move.piece)-1];
+                    auto [x,y] = board.from_coord(piece -> coords());
+                    
+                    auto coord = piece->coords();
+                    MatrixPosition pos = from_coords(piece->coords(true),cel);
+                    board.CleanPosition(pos);
+                    int piece_to_kill = board.Where(new_pos.row,new_pos.col);
+                    std::cout << "Piece to kill: " << piece_to_kill << std::endl;
 
+                    if(piece_to_kill > 0)
+                    {
+                        std::cout << "Killing...\n";
+                        gold[piece_to_kill-1] -> Kill(); // kill
+                    }
+                        
+                    Vector2 movable = from_matrix_position(new_pos,cel).to_vec2();
+                    piece -> Move(movable);
+                    board.RegisterPosition(move.x,move.y,move.piece);
 
-                // int piece = game.Kill(false); // violet
-                // board.CleanPosition(move.x,move.y);
-                // auto [x,y] = board.from_coord(move.x,move.y);
-                // violet[move.piece] -> Move({(float)x,(float)y});
-                // board.RegisterPosition(move.x,move.y,move.piece);
+                }else{printf("Mensagem rejeitada\n");}
+                // depois revemos isto
+                // se a mensagem for passada errada perde a vez
+                // mas por agora é importante para eu sincronizar na primeira jogada...
                 is_player_turn = true;
                 is_gold_turn = true;
             }

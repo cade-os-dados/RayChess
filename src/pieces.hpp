@@ -40,6 +40,12 @@ void Peca::Move(Vector2 new_pos)
     m_width = new_pos.x;
     m_height = new_pos.y;
 }
+void Peca::Move(MatrixPosition new_pos, CelDim cel)
+{
+    Coords coords = from_matrix_position(new_pos, cel);
+    m_width = static_cast<float>(coords.x);
+    m_height = static_cast<float>(coords.y);
+}
 void Peca::Kill(){active = false;}
 void Peca::ReSpawn(){
     active = true;

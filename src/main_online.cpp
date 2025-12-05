@@ -27,12 +27,16 @@ using namespace std;
     Por enquanto o que precisamos:
 
     1. Selecionar com qual tabuleiro vai jogar (gold/violet)
-    2. Trancar a jogada adversária
-    3. Ao realizar o movimento, enviar via tcp
-    4. Esperar a resposta do adversário
 
-    Acredito que seja mais fácil no mesmo arquivo ser server e player
-    Do que rodar o server separado pois o server terá que lidar com restream digamos
+    2. Criar o client agora, já temos o server
+
+    O ideal é antes de inicializar o servidor tcp, ter nos menus as opções
+    -> client ou servidor
+    -> se servidor selecionar a porta
+    -> se client, digitar ip e porta
+
+    3. Passar as principais funções para a nova api
+    acabar com tuple<int,int> que é meio sem significado e confuso
 */
 
 int main()
@@ -148,49 +152,35 @@ int main()
                 board.Debug();
             }
         }else{
-            // wait for response -> vai travar tudo
-            // terá que rodar numa thread separada e esperar o evento disparar
-            // std::string response = session.rcv();
-            // std::cout << response << std::endl;
             if(!request_queue.empty()) // notificacao assincrona!
             {
-                // melhorar a api...
-
-                // atualizar aqui
                 std::string message = request_queue.pop();
                 if(is_sync_move(message))
                 {
+                    // parse
                     SyncMove move = parse(message);
                     printf("Move: %d -> (%d,%d)\n", move.piece, move.x, move.y);
 
+                    // new position
+                    MatrixPosition new_position{move.x,move.y};
 
-                    // pegar o ponteiro da peça
-                    // mover a peça
-
-                    MatrixPosition new_pos{move.x,move.y};
-                    // board.CleanPosition(new_pos); // errado
-                    // tem que dar kill apenas se tiver uma peça
-
-                    // board.CleanPosition(move.x,move.y);
+                    // reset current position
                     auto piece = violet[abs(move.piece)-1];
-                    auto [x,y] = board.from_coord(piece -> coords());
-                    
-                    auto coord = piece->coords();
-                    MatrixPosition pos = from_coords(piece->coords(true),cel);
-                    board.CleanPosition(pos);
-                    int piece_to_kill = board.Where(new_pos.row,new_pos.col);
-                    std::cout << "Piece to kill: " << piece_to_kill << std::endl;
+                    MatrixPosition position = from_coords(piece->coords(true),cel);
+                    board.CleanPosition(position);
 
+                    // check kill
+                    int piece_to_kill = board.Where(new_position);
                     if(piece_to_kill > 0)
-                    {
-                        std::cout << "Killing...\n";
                         gold[piece_to_kill-1] -> Kill(); // kill
-                    }
-                        
-                    Vector2 movable = from_matrix_position(new_pos,cel).to_vec2();
-                    piece -> Move(movable);
-                    board.RegisterPosition(move.x,move.y,move.piece);
 
+                    // actualy move
+                    piece -> Move(new_position, cel);
+                    board.RegisterPosition(new_position,move.piece);
+
+                    // check endgame
+                    if(piece_to_kill > 0)
+                        game.CheckEndGame(piece_to_kill, false);
                 }else{printf("Mensagem rejeitada\n");}
                 // depois revemos isto
                 // se a mensagem for passada errada perde a vez

@@ -97,6 +97,10 @@ public:
     void RegisterPosition(int i, int k, int pos){
         cels[i][k] = pos;
     }
+    void RegisterPosition(MatrixPosition pos, int piece)
+    {
+        cels[pos.row][pos.col] = piece;
+    }
     void CleanPosition(int i, int k){cels[i][k] = 0;}
     void CleanPosition(MatrixPosition pos){cels[pos.row][pos.col] = 0;}
     Action VerifyPosition(int i, int k, int gold) const{
@@ -118,6 +122,7 @@ public:
     } 
 
     int Where(int i, int j) {return cels[i][j]; }
+    int Where(MatrixPosition pos) { return cels[pos.row][pos.col]; }
 
     std::tuple<int, int> to_coord(int i, int j){
         return std::make_tuple(x*i, y*j);

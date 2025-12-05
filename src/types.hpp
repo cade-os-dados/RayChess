@@ -42,6 +42,7 @@ public:
     std::tuple<int,int> coords(void){return std::make_tuple(m_width, m_height);}
     Coords coords(bool placeholder){return {(int)m_width, (int)m_height};}
     void Move(Vector2 new_pos);
+    void Move(MatrixPosition, CelDim);
     void Kill();
     void ReSpawn();
     void RegisterOriginalPlace();

@@ -1,5 +1,6 @@
 #pragma once
 #include <raylib.h>
+#include <vector>
 
 /* Matrix position, between 0 and 7 that represents the board */
 struct MatrixPosition{int row, col;};
@@ -9,6 +10,7 @@ struct Coords{
 };
 struct Resolution{int width, height;}; // screen resolution
 struct CelDim{int width; int height;}; // cel dimensions
+typedef std::vector<MatrixPosition> VecMatrixPosition;
 
 CelDim to_cel_dim(Resolution resolution)
 {

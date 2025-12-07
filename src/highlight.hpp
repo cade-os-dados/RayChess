@@ -2,6 +2,7 @@
 #include "pieces.hpp"
 #include <memory>
 #include "types.hpp"
+#include "coord.hpp"
 
 // typedef std::vector<std::shared_ptr<Peca>> pecas;
 
@@ -29,7 +30,7 @@ public:
     bool is_on(void){return on;}
     bool IsGold(void){return this->idx > 0;}
     int GetNClicks(){return nclicks;}
-    VecCoords GetMoves(int i, int j){return getPiece() -> PossibleMoveCoords(i,j);}
+    VecMatrixPosition GetMoves(int i, int j){return getPiece() -> PossibleMoveCoords(i,j);}
     int getPieceIndex(void){return idx;}
     std::shared_ptr<Peca> getPiece(void){
         if (idx == 0) return nullptr;
@@ -44,7 +45,7 @@ public:
     void setBoardColor(  
         int where_clicked, 
         bool is_gold_turn,
-        VecCoords& cache_possible_moves
+        VecMatrixPosition& cache_possible_moves
     ){
         this -> setPieceIndex(where_clicked); // altera o índice da peça highlightada
         auto piece = this -> getPiece();
@@ -64,7 +65,7 @@ public:
     void setHighlight(
         int where_clicked, 
         bool is_gold_turn,
-        VecCoords& cache_possible_moves
+        VecMatrixPosition& cache_possible_moves
     ){
         if(on) return; // already on - ignore
         bool highlight_gold = where_clicked > 0 && is_gold_turn;
@@ -85,7 +86,7 @@ public:
     void ReHighlight(        
         int where_clicked, 
         bool is_gold_turn,
-        VecCoords& cache_possible_moves)
+        VecMatrixPosition& cache_possible_moves)
     {
         this -> Activate();
         board -> backupAllCellColor();

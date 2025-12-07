@@ -37,13 +37,13 @@ using namespace std;
 
     3. Passar as principais funções para a nova api
     acabar com tuple<int,int> que é meio sem significado e confuso
+
+    Vamos criar uma api player que facilite isso, pois assim 
 */
 
 int main()
 {
     // NET SERVER
-
-
     std::thread th([]{
         boost::asio::io_context io_context;
         Server s(io_context, 4433);
@@ -70,7 +70,7 @@ int main()
 
     Color cartao_color = GOLD;
 
-    std::vector<std::tuple<int,int>> cache_possible_moves;
+    VecMatrixPosition cache_possible_moves;
     c_highlight.SetPieces(&gold,true);
     c_highlight.SetPieces(&violet,false);
     c_highlight.SetBoardPtr(&board);
@@ -105,53 +105,8 @@ int main()
         DrawText(game.GoldPoints(), 240, H+10, 20, WHITE);
         DrawText(game.VioletPoints(), 240, H+40, 20, WHITE); 
 
-        if(is_player_turn)
+        if(!is_player_turn)
         {
-            if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                rodada++;
-                std::cout << "------------------------------\nRodada: " << rodada << std::endl;
-                
-                c_highlight.UpdateClicked(true);
-
-                Vector2 mousePosition = GetMousePosition();
-                std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
-                
-                int where_clicked = board.CheckWhereCliked();
-                c_highlight.setHighlight(where_clicked, is_gold_turn, cache_possible_moves);
-
-                if(c_highlight.is_on())
-                {
-                    if(c_highlight.CheckReHighlight(where_clicked))
-                    {
-                        c_highlight.ReHighlight(where_clicked, is_gold_turn, cache_possible_moves);
-                    }
-                    
-                    game.GetMatrixPos(mousePosition);
-                    game.GetTruncatedPos(mousePosition);
-
-                    for (auto [x_mov,y_mov] : cache_possible_moves)
-                    {
-                        if(game.CanMove(x_mov, y_mov))
-                        {
-                            auto [piece_ptr, piece_idx, is_gold_piece] = c_highlight.GetInfo();
-                            int piece = game.Kill(is_gold_piece);
-                            game.Move(piece_ptr, piece_idx);
-
-                            // send across network
-                            // response_queue.push(to_str({piece_idx, x_mov, y_mov}));
-                            push_and_notify(to_str({piece_idx,x_mov,y_mov}));
-                            
-                            c_highlight.Change(false);
-                            game.CheckEndGame(piece, is_gold_piece);
-                            is_player_turn = false;
-                            break;
-                        }
-                    }
-                }
-                board.Debug();
-            }
-        }else{
             if(!request_queue.empty()) // notificacao assincrona!
             {
                 std::string message = request_queue.pop();
@@ -163,24 +118,13 @@ int main()
 
                     // new position
                     MatrixPosition new_position{move.x,move.y};
-
-                    // reset current position
-                    auto piece = violet[abs(move.piece)-1];
-                    MatrixPosition position = from_coords(piece->coords(true),cel);
-                    board.CleanPosition(position);
-
-                    // check kill
-                    int piece_to_kill = board.Where(new_position);
-                    if(piece_to_kill > 0)
-                        gold[piece_to_kill-1] -> Kill(); // kill
-
-                    // actualy move
-                    piece -> Move(new_position, cel);
-                    board.RegisterPosition(new_position,move.piece);
+                    int piece_to_kill = game.Kill(new_position, false);
+                    game.Move(move.piece, new_position, cel);
 
                     // check endgame
                     if(piece_to_kill > 0)
                         game.CheckEndGame(piece_to_kill, false);
+
                 }else{printf("Mensagem rejeitada\n");}
                 // depois revemos isto
                 // se a mensagem for passada errada perde a vez
@@ -188,6 +132,48 @@ int main()
                 is_player_turn = true;
                 is_gold_turn = true;
             }
+        }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            rodada++;
+            std::cout << "------------------------------\nRodada: " << rodada << std::endl;
+            
+            c_highlight.UpdateClicked(true);
+
+            Vector2 mousePosition = GetMousePosition();
+            std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
+            
+            int where_clicked = board.CheckWhereCliked();
+            c_highlight.setHighlight(where_clicked, is_gold_turn, cache_possible_moves);
+
+            if(c_highlight.is_on())
+            {
+                if(c_highlight.CheckReHighlight(where_clicked))
+                {
+                    c_highlight.ReHighlight(where_clicked, is_gold_turn, cache_possible_moves);
+                }
+                
+                game.GetMatrixPos(mousePosition);
+                game.GetTruncatedPos(mousePosition);
+
+                for (MatrixPosition new_pos : cache_possible_moves)
+                {
+                    if(game.CanMove(new_pos))
+                    {
+                        auto [piece_ptr, piece_idx, is_gold_piece] = c_highlight.GetInfo();
+                        int piece = game.Kill(new_pos, is_gold_piece);
+                        game.Move(piece_idx, new_pos, cel);
+
+                        // send across network
+                        push_and_notify(to_str({piece_idx,new_pos.row,new_pos.col}));
+                        
+                        c_highlight.Change(false);
+                        game.CheckEndGame(piece, is_gold_piece);
+                        is_player_turn = false;
+                        break;
+                    }
+                }
+            }
+            board.Debug();
         }
         EndDrawing();
     }

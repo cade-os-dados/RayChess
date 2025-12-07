@@ -67,7 +67,7 @@ public:
     {
         return (m_width == OriginalPlace[0] && m_height == OriginalPlace[1]);
     }
-    inline void AppendCoordIfAttack(VecCoords& coords, int row, int col)
+    inline void AppendCoordIfAttack(VecMatrixPosition& coords, int row, int col)
     {
         std::cout << "[DEBUG] (" << row << "," <<  
             col << "): "
@@ -75,15 +75,15 @@ public:
         if(this->move->VerifyPosition(row,col,this->is_gold) == Action::attack)
             append_coords(coords,row,col);
     }
-    inline void AppendCoordIfMovable(VecCoords& coords, int row, int col)
+    inline void AppendCoordIfMovable(VecMatrixPosition& coords, int row, int col)
     {
         if(this->move->VerifyPosition(row,col,this->is_gold) == Action::movable)
             append_coords(coords,row,col);
     }
 
-    VecCoords PossibleMoveCoords(int i, int j) override
+    VecMatrixPosition PossibleMoveCoords(int i, int j) override
     {
-        VecCoords coords;
+        VecMatrixPosition coords;
         if(is_gold)
         {
             AppendCoordIfMovable(coords,i+1,j); // down
@@ -122,9 +122,9 @@ public:
         this->RegisterOriginalPlace();
     }
 
-    VecCoords PossibleMoveCoords(int i, int j) override
+    VecMatrixPosition PossibleMoveCoords(int i, int j) override
     {
-        VecCoords coords;
+        VecMatrixPosition coords;
         
         // right 1
         append_coords(coords,i+1,j+2);
@@ -150,9 +150,9 @@ public:
         this->RegisterOriginalPlace();
     }
 
-    VecCoords PossibleMoveCoords(int i, int j) override
+    VecMatrixPosition PossibleMoveCoords(int i, int j) override
     {
-        VecCoords coords;
+        VecMatrixPosition coords;
 
         this->move->Left(coords,i,j,this->is_gold);
         this->move->Right(coords,i,j,this->is_gold);
@@ -170,9 +170,9 @@ public:
         this->RegisterOriginalPlace();
     }
 
-    VecCoords PossibleMoveCoords(int i, int j) override 
+    VecMatrixPosition PossibleMoveCoords(int i, int j) override 
     {
-        VecCoords coords;
+        VecMatrixPosition coords;
 
         this->move->DiagonalLeftBottom(coords,i,j,this->is_gold);
         this->move->DiagonalRightTop(coords,i,j,this->is_gold);
@@ -189,9 +189,9 @@ public:
         m_width = 300;
         this->RegisterOriginalPlace();
     }
-    VecCoords PossibleMoveCoords(int i, int j) override 
+    VecMatrixPosition PossibleMoveCoords(int i, int j) override 
     {
-        VecCoords coords;
+        VecMatrixPosition coords;
 
         this->move->DiagonalLeftBottom(coords,i,j,this->is_gold);
         this->move->DiagonalRightTop(coords,i,j,this->is_gold);
@@ -212,9 +212,9 @@ public:
         m_width = 400;
         this->RegisterOriginalPlace();
     }
-    VecCoords PossibleMoveCoords(int i, int j) override
+    VecMatrixPosition PossibleMoveCoords(int i, int j) override
     {
-        VecCoords coords;
+        VecMatrixPosition coords;
         append_coords(coords,i,j+1); // up
         append_coords(coords,i,j-1); // down
 

@@ -4,8 +4,6 @@
 #include <raylib.h>
 #include "coord.hpp"
 
-typedef std::vector<std::tuple<int,int> > VecCoords;
-
 class InfinityMove{
 private:
     Board* m_Board;
@@ -14,16 +12,16 @@ public:
     InfinityMove(Board* board) : m_Board(board) {}
     Action VerifyPosition(int k, int l, bool gold);
     bool BreakCondition(int k, int l, int is_gold);
-    bool AppendAndCheck(VecCoords& coords);
+    bool AppendAndCheck(VecMatrixPosition& coords);
     void ResetParams(int i, int j, bool gold);
-    void DiagonalLeftBottom(VecCoords& coords, int i, int j, bool gold);
-    void DiagonalLeftTop(VecCoords& coords, int i, int j, bool gold);
-    void DiagonalRightBottom(VecCoords& coords, int i, int j, bool gold);
-    void DiagonalRightTop(VecCoords& coords, int i, int j, bool gold);
-    void Top(VecCoords& coords, int i, int j, bool gold);
-    void Bottom(VecCoords& coords, int i, int j, bool gold);
-    void Left(VecCoords& coords, int i, int j, bool gold);
-    void Right(VecCoords&, int, int, bool);
+    void DiagonalLeftBottom(VecMatrixPosition& coords, int i, int j, bool gold);
+    void DiagonalLeftTop(VecMatrixPosition& coords, int i, int j, bool gold);
+    void DiagonalRightBottom(VecMatrixPosition& coords, int i, int j, bool gold);
+    void DiagonalRightTop(VecMatrixPosition& coords, int i, int j, bool gold);
+    void Top(VecMatrixPosition& coords, int i, int j, bool gold);
+    void Bottom(VecMatrixPosition& coords, int i, int j, bool gold);
+    void Left(VecMatrixPosition& coords, int i, int j, bool gold);
+    void Right(VecMatrixPosition&, int, int, bool);
 };
 
 class Peca {
@@ -38,7 +36,7 @@ public:
     Peca(bool gold, const char* imagePath, float height_if_gold, float height_if_violet, InfinityMove* mv);
     virtual ~Peca() { UnloadTexture(texture); }
     void Draw();
-    virtual VecCoords PossibleMoveCoords(int i, int j) = 0;
+    virtual VecMatrixPosition PossibleMoveCoords(int i, int j) = 0;
     std::tuple<int,int> coords(void){return std::make_tuple(m_width, m_height);}
     Coords coords(bool placeholder){return {(int)m_width, (int)m_height};}
     void Move(Vector2 new_pos);

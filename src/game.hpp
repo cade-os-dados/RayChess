@@ -72,9 +72,9 @@ public:
         this -> Reset();
     }
 
-    bool CanMove(int i, int j)
+    bool CanMove(MatrixPosition pos)
     {
-        return matrix_pos_x == i && matrix_pos_y == j;
+        return matrix_pos_x == pos.row && matrix_pos_y == pos.col;
     }
 
     auto get_piece_by_idx(int idx, bool is_gold)
@@ -82,14 +82,34 @@ public:
         if(is_gold) return (*gold_ptr)[idx];
         else return (*violet_ptr)[idx];
     }
-    int Kill(bool is_gold_piece)
+
+    int Kill(MatrixPosition pos, bool is_gold_piece)
     {
-        int piece = board -> Where(matrix_pos_x,matrix_pos_y);
+        int piece = board -> Where(pos);
         if(piece < 0 && is_gold_piece)
             get_piece_by_idx(abs(piece)-1, false) -> Kill();
         else if(piece > 0 && !is_gold_piece)
             get_piece_by_idx(piece-1,true) -> Kill();
         return piece;
+    }
+
+    /*
+        Sistema de movimento tem que ser uma classe a parte!
+        Não game!
+    */
+    void Move(int piece_idx, MatrixPosition new_pos, CelDim cel)
+    {
+        if(piece_idx == 0) return; // impossible...
+        bool is_gold = piece_idx > 0;
+        auto piece = get_piece_by_idx(abs(piece_idx)-1,is_gold);
+
+        // clean last position
+        MatrixPosition piece_pos = from_coords(piece->coords(true), cel);
+        board -> CleanPosition(piece_pos);
+
+        // move and register
+        piece -> Move(new_pos,cel);
+        board -> RegisterPosition(new_pos,piece_idx);
     }
 
     void Move(std::shared_ptr<Peca>& piece_ptr, int piece_idx)

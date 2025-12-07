@@ -158,18 +158,18 @@ public:
         return celColors[i][j];
     }
 
-    void Highlight(std::vector<std::tuple<int,int>>& possible_positions, int is_gold)
+    void Highlight(VecMatrixPosition& possible_positions, int is_gold)
     {
-        std::vector<std::tuple<int,int>> possible_positions2;
+        VecMatrixPosition possible_positions2;
 
         for (auto [xi,ji] : possible_positions){
             Action acao = this -> VerifyPosition(xi,ji,is_gold);
             if (acao == Action::movable){
                 this -> changeCellColor(xi,ji,GREEN);
-                possible_positions2.push_back(std::make_tuple(xi,ji));
+                possible_positions2.push_back({xi,ji});
             } else if(acao == Action::attack) {
                 this -> changeCellColor(xi,ji,RED);
-                possible_positions2.push_back(std::make_tuple(xi,ji));
+                possible_positions2.push_back({xi,ji});
             }
         }
 

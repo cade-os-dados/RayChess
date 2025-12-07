@@ -3,6 +3,7 @@
 #include <iostream>
 #include <charconv>
 #include <cassert>
+#include "../coord.hpp"
 
 /*
     Aqui teremos apenas 
@@ -14,8 +15,7 @@
 
 struct SyncMove {
     int piece;
-    int x;
-    int y;
+    MatrixPosition mov;
 };
 
 bool is_sync_move(std::string_view string, std::cmatch& match)
@@ -51,8 +51,8 @@ SyncMove parse(std::string_view string)
     set_value(string.substr(6,idx), sync.piece);
 
     int offset = idx-7;
-    sync.x = string[12+offset] - '0';
-    sync.y = string[14+offset] - '0';
+    sync.mov.row = string[12+offset] - '0';
+    sync.mov.col = string[14+offset] - '0';
 
     return sync;
 }
@@ -61,8 +61,8 @@ SyncMove parse_with_regex(std::cmatch match)
 {
     SyncMove sync;
     sync.piece = std::stoi(match[1].str());
-    sync.x = std::stoi(match[2].str());
-    sync.y = std::stoi(match[3].str());
+    sync.mov.row = std::stoi(match[2].str());
+    sync.mov.col = std::stoi(match[3].str());
     return sync;
 }
 
@@ -71,8 +71,8 @@ std::string to_str(SyncMove sync)
     return "Move: " 
         + std::to_string(sync.piece) 
         + " -> (" 
-        + std::to_string(sync.x) 
+        + std::to_string(sync.mov.row) 
         + ","
-        + std::to_string(sync.y)
+        + std::to_string(sync.mov.col)
         + ")";
 }

@@ -113,13 +113,11 @@ int main()
                 if(is_sync_move(message))
                 {
                     // parse
-                    SyncMove move = parse(message);
-                    printf("Move: %d -> (%d,%d)\n", move.piece, move.x, move.y);
+                    SyncMove sync = parse(message);
+                    printf("Move: %d -> (%d,%d)\n", sync.piece, sync.mov.row, sync.mov.col);
 
-                    // new position
-                    MatrixPosition new_position{move.x,move.y};
-                    int piece_to_kill = game.Kill(new_position, false);
-                    game.Move(move.piece, new_position, cel);
+                    int piece_to_kill = game.Kill(sync.mov, false);
+                    game.Move(sync.piece, sync.mov, cel);
 
                     // check endgame
                     if(piece_to_kill > 0)

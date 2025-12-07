@@ -62,8 +62,7 @@ int main()
         io_context.run();
     }); // io_context.run();
 
-    Player player1;
-    player1.SetPlayerColor(PIECE_COLOR_GOLD);
+    Player player1(PIECE_COLOR_GOLD);
 
     // ---- TABULEIRO ----
     int n = 8;

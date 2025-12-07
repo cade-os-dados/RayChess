@@ -3,10 +3,9 @@
 #include <vector>
 #include <memory>
 #include "highlight.hpp"
-#include "game.hpp"
 #include "net/sync_server.hpp"
-#include "net/parser.hpp"
 #include "coord.hpp"
+#include "player.hpp"
 
 const int W = 800;
 const int H = 600;
@@ -39,6 +38,19 @@ using namespace std;
     acabar com tuple<int,int> que é meio sem significado e confuso
 
     Vamos criar uma api player que facilite isso, pois assim 
+
+    O novo fluxo deve ser assim:
+    Player1 -> fixo para todos os modos
+    Player2 -> local, remote, IA
+
+    Daí player1.play() -> logica de highlight, move/kill/checkreset
+    player2.play() 
+        -> se local idem player1
+        -> se remote espera a mensagem e sincroniza
+        -> se IA espera a IA e sincroniza
+    
+    Depois criamos a logica de seleção dos modos
+    E a lógica de conexão
 */
 
 int main()
@@ -49,6 +61,9 @@ int main()
         Server s(io_context, 4433);
         io_context.run();
     }); // io_context.run();
+
+    Player player1;
+    player1.SetPlayerColor(PIECE_COLOR_GOLD);
 
     // ---- TABULEIRO ----
     int n = 8;
@@ -105,7 +120,7 @@ int main()
         DrawText(game.GoldPoints(), 240, H+10, 20, WHITE);
         DrawText(game.VioletPoints(), 240, H+40, 20, WHITE); 
 
-        if(!is_player_turn)
+        if(!player1.is_turn)
         {
             if(!request_queue.empty()) // notificacao assincrona!
             {
@@ -116,19 +131,12 @@ int main()
                     SyncMove sync = parse(message);
                     printf("Move: %d -> (%d,%d)\n", sync.piece, sync.mov.row, sync.mov.col);
 
-                    int piece_to_kill = game.Kill(sync.mov, false);
-                    game.Move(sync.piece, sync.mov, cel);
 
-                    // check endgame
-                    if(piece_to_kill > 0)
-                        game.CheckEndGame(piece_to_kill, false);
-
+                    player1.Sync(game,sync,cel);
                 }else{printf("Mensagem rejeitada\n");}
-                // depois revemos isto
-                // se a mensagem for passada errada perde a vez
-                // mas por agora é importante para eu sincronizar na primeira jogada...
-                is_player_turn = true;
+
                 is_gold_turn = true;
+                player1.is_turn = true;
             }
         }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -162,11 +170,13 @@ int main()
                         game.Move(piece_idx, new_pos, cel);
 
                         // send across network
-                        push_and_notify(to_str({piece_idx,new_pos.row,new_pos.col}));
+                        push_and_notify(to_str({piece_idx,new_pos}));
                         
                         c_highlight.Change(false);
-                        game.CheckEndGame(piece, is_gold_piece);
-                        is_player_turn = false;
+                        if(game.CheckEndGame(piece, is_gold_piece))
+                            game.Reset();
+                        // is_player_turn = false;
+                        player1.is_turn = false;
                         break;
                     }
                 }

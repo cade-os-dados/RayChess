@@ -61,15 +61,22 @@ public:
         for(const auto& piece : *violet_ptr) piece -> ReSpawn();
     }
 
-    void CheckEndGame(int piece, bool is_gold_piece)
+    bool CheckEndGame(int piece, bool is_gold_piece)
     {
         // rei derrotado
         if(piece == 5 && !is_gold_piece)
+        {
             this -> AddViolet();
+            return true;
+        }
+            
         else if(piece == -5 && is_gold_piece)
+        {
             this -> AddGold();
-        else {*is_gold_turn = !(*is_gold_turn); return; }
-        this -> Reset();
+            return true;
+        }
+        // else {*is_gold_turn = !(*is_gold_turn); return false; }
+        else return false;
     }
 
     bool CanMove(MatrixPosition pos)

@@ -4,6 +4,11 @@
 #include <raylib.h>
 #include "coord.hpp"
 
+enum PIECE_COLOR{
+    PIECE_COLOR_GOLD,
+    PIECE_COLOR_VIOLET
+};
+
 class InfinityMove{
 private:
     Board* m_Board;

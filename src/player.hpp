@@ -9,9 +9,10 @@
 #include "types.hpp"
 
 class Player{
-    PIECE_COLOR player_color, enemy_color;
 public:
+    PIECE_COLOR player_color, enemy_color;
     bool is_turn;
+    int num_resets{0};
     Player(PIECE_COLOR color)
     {
         player_color = color;
@@ -25,18 +26,16 @@ public:
             this -> is_turn = false;
         }
     }
-    void Sync(Game& game, SyncMove sync, CelDim cel)
+    bool Sync(Game& game, SyncMove sync, CelDim cel)
     {
         int piece_to_kill = game.Kill(sync.mov, enemy_color == PIECE_COLOR_GOLD);
         game.Move(sync.piece,sync.mov,cel);
-        if(piece_to_kill > 0)
+        if(game.CheckEndGame(piece_to_kill, enemy_color == PIECE_COLOR_GOLD))
         {
-            if(game.CheckEndGame(piece_to_kill, enemy_color == PIECE_COLOR_GOLD))
-            {
-                game.Reset();
-                return;
-            }
+            game.Reset();
+            return true;
         }
+        return false;
     }
 };
 

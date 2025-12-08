@@ -3,7 +3,8 @@
 #include <vector>
 #include <memory>
 #include "highlight.hpp"
-#include "net/sync_server.hpp"
+#include "net/client.hpp"
+#include "net/safe_queue.hpp"
 #include "coord.hpp"
 #include "player.hpp"
 
@@ -53,16 +54,56 @@ using namespace std;
     E a lógica de conexão
 */
 
+MessageQueue request_queue, response_queue;
+
+void rede()
+{  
+    Client client(boost::asio::ssl::verify_none);
+    client.connect("127.0.0.1","4433");
+    client.handshake();
+    std::cout << "handshake ok\n";
+
+    
+    client.write("ping");
+    // std::cout << "Receveid: " << response << std::endl;
+    // response_queue.push(response);
+
+    std::thread receiver([&client](){
+        while(true)
+        {
+            std::string response = client.rcv();
+            std::cout << "Received: " << response << std::endl;
+            response_queue.push(response);
+        }
+    });
+
+    std::thread sender([&client](){
+        while(true)
+        {
+            if(!request_queue.empty())
+            {
+                // Bloqueia e espera por uma mensagem na fila
+                std::string msg_to_send = request_queue.pop(); 
+                
+                if (msg_to_send == "__STOP__") break;
+                
+                client.write(msg_to_send);
+            }
+        }
+    });
+
+    sender.join();
+    receiver.join();
+    client.run(); // O run só será chamado após o loop terminar
+}
+
+
 int main()
 {
     // NET SERVER
-    std::thread th([]{
-        boost::asio::io_context io_context;
-        Server s(io_context, 4433);
-        io_context.run();
-    }); // io_context.run();
+    std::thread th(rede);
 
-    Player player1(PIECE_COLOR_GOLD);
+    Player player1(PIECE_COLOR_VIOLET);
 
     // ---- TABULEIRO ----
     int n = 8;
@@ -72,7 +113,7 @@ int main()
     InfinityMove move(&board);
 
     int rodada = 0;
-    InitWindow(W, H+100, "Server");
+    InitWindow(W, H+100, "Client");
     
     SetTargetFPS(60);
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -88,11 +129,6 @@ int main()
     c_highlight.SetBoardPtr(&board);
 
     Game game(&gold, &violet, &is_gold_turn, &board);
-
-    std::cout << "Esperando primeira mensagem\n";
-    while(request_queue.empty()){
-        continue;
-    }
     
     // bool debug = true;
     while(!WindowShouldClose())
@@ -126,10 +162,10 @@ int main()
 
         if(!player1.is_turn)
         {
-            if(!request_queue.empty()) // notificacao assincrona!
+            if(!response_queue.empty()) // notificacao assincrona!
             {
-                
-                std::string message = request_queue.pop();
+                std::cout << "received\n";
+                std::string message = response_queue.pop();
                 if(is_sync_move(message))
                 {
                     // parse
@@ -144,9 +180,9 @@ int main()
                     }else{
                         is_gold_turn = true;
                         player1.is_turn = player1.player_color == PIECE_COLOR_GOLD;
+                        request_queue.push("ping"); // apenas para sincronizar pois o server é síncrono
                     }
                 }else{printf("Mensagem rejeitada\n");}
-
             }
         }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -180,17 +216,15 @@ int main()
                         game.Move(piece_idx, new_pos, cel);
 
                         // send across network
-                        push_and_notify(to_str({piece_idx,new_pos}));
+                        request_queue.push(to_str({piece_idx,new_pos}));
                         
                         c_highlight.Change(false);
                         if(game.CheckEndGame(piece, is_gold_piece))
                         {
                             endgame = true;
                             game.Reset();
+                            std::cout << "Game reseted\n";
                         }
-                            
-                        // player1.is_turn = false;
-                        // is_gold_turn = !is_gold_turn;
 
                         if(!endgame)
                         {

@@ -10,5 +10,7 @@ linux:
 	g++ src/main.cpp -o app -O1  -I ./include/ -I ./src/ -L ./lib/ $(RAYLIB)
 online:
 	g++ src/main_online.cpp -o app -O1 $(INCLUDE) $(RAYLIB) $(BOOST) $(OPENSSL)
+online_client:
+	g++ src/main_online_client.cpp -o client -O1 $(INCLUDE) $(RAYLIB) $(BOOST) $(OPENSSL)
 client:
 	g++ src/client.cpp -o client $(OPENSSL) $(BOOST)

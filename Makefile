@@ -3,6 +3,7 @@ WARNINGS = -Wall -Wno-missing-braces
 INCLUDE = -I ./include/ -I ./src/ -L ./lib/
 BOOST = -lboost_system
 OPENSSL = -lssl -lcrypto
+WINDOWS = -lopengl32 -lgdi32 -lwinmm
 
 all:
 	g++ src/main.cpp -o app.exe -O1 -Wall -Wno-missing-braces -I ./include/ -I ./src/ -L ./lib/ -lraylib -lopengl32 -lgdi32 -lwinmm
@@ -12,5 +13,7 @@ online:
 	g++ src/main_online.cpp -o app -O1 $(INCLUDE) $(RAYLIB) $(BOOST) $(OPENSSL)
 online_client:
 	g++ src/main_online_client.cpp -o client -O1 $(INCLUDE) $(RAYLIB) $(BOOST) $(OPENSSL)
+online_client_windows:
+	g++ src/main_online_client.cpp -o client -O1 $(INCLUDE) $(RAYLIB) $(BOOST) $(OPENSSL) $(WINDOWS)
 client:
 	g++ src/client.cpp -o client $(OPENSSL) $(BOOST)

@@ -9,6 +9,8 @@ M = coord board move
 HEADERS = vector iostream tuple
 
 all:
+	compile_modules;\
+	rm;\
 	g++ move.cpp $(STD) $(INCLUDE) $(FLAG) $(MODULES) -o main $(LIB) $(WINDOWS)
 
 compile_headers:
@@ -26,6 +28,12 @@ compile_modules:
 rm:
 	rm *.o
 
-compile: compile_headers compile_modules rm
+compile: compile_headers compile_modules
+
+iostream:
+	g++ $(STD) $(FLAG) c++-system-header iostream
+
+scanner:
+	g++ scanner.cpp -O2 -o scanner.exe
 
 # rm $$m.o; \

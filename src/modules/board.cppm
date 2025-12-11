@@ -1,10 +1,12 @@
+module;
+
+#include <raylib.h>
+
 export module board;
 
 import <iostream>;
 import <tuple>;
 import coord;
-
-#include <raylib.h>
 
 /*
     1. Criar uma classe que transforma coordenadas da posição do mouse

@@ -1,6 +1,5 @@
 *.exe
 *.a
-.vscode/
 app
 client
 raylib/

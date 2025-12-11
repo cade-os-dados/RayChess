@@ -34,6 +34,9 @@ public:
     void ResetParams(int i, int j, bool gold){
         this->row = i, this->col = j; this -> is_gold = (int)gold;
     };
+
+    // transformar em um enum: DiagonalLeftBottom/DiagionalLeftTop/DiagonalRightBottom, etc...
+
     void DiagonalLeftBottom(VecMatrixPosition& coords, int i, int j, bool gold){
         INCREMENT_UNTIL(1, 1, row < 8 && col < 8);
     };

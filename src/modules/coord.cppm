@@ -1,7 +1,9 @@
-export module coord;
-import <vector>;
+module;
 
 #include <raylib.h>
+
+export module coord;
+import <vector>;
 
 /* Matrix position, between 0 and 7 that represents the board */
 export struct MatrixPosition{int row, col;};

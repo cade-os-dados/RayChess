@@ -6,6 +6,7 @@ export module board;
 
 import <iostream>;
 import <tuple>;
+import <vector>;
 import coord;
 
 /*

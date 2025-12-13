@@ -1,39 +1,37 @@
-LIB = -lraylib
-STD = -std=c++20
-INCLUDE = -I../../include -I. -L../../lib
-FLAG = -fmodules-ts -x
-MODULES = c++ coord.cppm board.cppm move.cppm
-WINDOWS = -lopengl32 -lgdi32 -lwinmm
+########### MAKEFILE FOR CLANG++ MODULES
 
-M = coord board move
-HEADERS = vector iostream tuple
+HEADERS = iostream vector tuple
+COMPILER = clang++
+STD = -std=c++23
+MODULES = coord board move  
+INCLUDE = -I../../include
+LIB = -L../../lib
+PCM = -fmodule-file=pcm/iostream.pcm\
+	-fmodule-file=pcm/tuple.pcm\
+	-fmodule-file=pcm/vector.pcm\
+	-fmodule-file=coord=pcm/coord.pcm\
+	-fmodule-file=board=pcm/board.pcm\
+	-fmodule-file=move=pcm/move.pcm
 
-all:
-	compile_modules;\
-	rm;\
-	g++ move.cpp $(STD) $(INCLUDE) $(FLAG) $(MODULES) -o main $(LIB) $(WINDOWS)
+TEST = pcm/iostream.pcm pcm/tuple.pcm pcm/vector.pcm pcm/coord.pcm pcm/board.pcm pcm/move.pcm
 
-compile_headers:
+all: mkdir stl modules main
+
+mkdir:
+	@echo "Criando diretório pcm..."
+	mkdir -p pcm
+
+stl:
 	@for h in $(HEADERS); do \
 		echo "Compilando system header $$h..."; \
-		g++ $(STD) $(FLAG) c++-system-header $$h; \
+		$(COMPILER) $(STD) -xc++-system-header --precompile $$h -o pcm/$$h.pcm; \
 	done
 
-compile_modules:
-	@for m in $(M); do \
-		echo "Compilando módulo $$m..."; \
-		g++ -c $(STD) $(INCLUDE) -fmodules-ts -x c++ $$m.cppm; \
+modules:
+	@for m in $(MODULES); do \
+		echo "Compilando module... $$m"; \
+		$(COMPILER) $(STD) $(INCLUDE) $$m.cppm $(PCM) --precompile -o pcm/$$m.pcm; \
 	done
 
-rm:
-	rm *.o
-
-compile: compile_headers compile_modules
-
-iostream:
-	g++ $(STD) $(FLAG) c++-system-header iostream
-
-scanner:
-	g++ scanner.cpp -O2 -o scanner.exe
-
-# rm $$m.o; \
+main:
+	$(COMPILER) $(STD) $(LIB) $(INCLUDE) -fmodules move.cpp $(PCM) $(TEST) -o main -lraylib

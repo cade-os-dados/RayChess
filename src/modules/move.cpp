@@ -1,4 +1,5 @@
 import <iostream>;
+import <vector>;
 import coord;
 import move;
 import board;

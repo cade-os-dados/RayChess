@@ -15,7 +15,6 @@ export struct Resolution{int width, height;}; // screen resolution
 export struct CelDim{int width; int height;}; // cel dimensions
 export using VecMatrixPosition = std::vector<MatrixPosition>;
 
-
 export CelDim to_cel_dim(Resolution resolution)
 {
     // xadrez 8x8

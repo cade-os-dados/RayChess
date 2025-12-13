@@ -1,0 +1,50 @@
+LIB = -lraylib
+STD = -std=c++20
+INCLUDE = -I../../include -I. -L../../lib
+FLAG = -fmodules-ts -x
+MODULES = c++ coord.cppm board.cppm move.cppm
+WINDOWS = -lopengl32 -lgdi32 -lwinmm
+
+M = coord board move
+HEADERS = vector iostream tuple
+
+all:
+	compile_modules;\
+	rm;\
+	g++ move.cpp $(STD) $(INCLUDE) $(FLAG) $(MODULES) -o main $(LIB) $(WINDOWS)
+
+linux:
+	compile_modules;\
+	rm;\
+	g++ move.cpp $(STD) $(INCLUDE) $(FLAG) $(MODULES) -o main $(LIB)
+
+compile_headers:
+	@for h in $(HEADERS); do \
+		echo "Compilando system header $$h..."; \
+		g++ $(STD) $(FLAG) c++-system-header $$h; \
+	done
+
+compile_modules:
+	@for m in $(M); do \
+		echo "Compilando módulo $$m..."; \
+		g++ -c $(STD) $(INCLUDE) -fmodules-ts -x c++ $$m.cppm; \
+	done
+
+rm:
+	rm *.o
+
+compile: compile_headers compile_modules
+
+iostream:
+	g++ $(STD) $(FLAG) c++-system-header iostream
+
+scanner:
+	g++ scanner.cpp -O2 -o scanner.exe
+
+# rm $$m.o; \
+
+
+########################## CLANG
+
+################ BUILD C++ HEADERS
+

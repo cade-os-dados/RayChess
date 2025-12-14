@@ -7,6 +7,7 @@
 #include "game.hpp"
 #include "net/parser.hpp"
 #include "types.hpp"
+#include <functional>
 
 class Player{
 public:
@@ -28,14 +29,32 @@ public:
     }
     bool Sync(Game& game, SyncMove sync, CelDim cel)
     {
-        int piece_to_kill = game.Kill(sync.mov, enemy_color == PIECE_COLOR_GOLD);
+        PIECE_COLOR color = is_turn ? player_color : enemy_color;
+        bool is_gold = color == PIECE_COLOR_GOLD;
+        
+        int piece_to_kill = game.Kill(sync.mov, is_gold);
         game.Move(sync.piece,sync.mov,cel);
-        if(game.CheckEndGame(piece_to_kill, enemy_color == PIECE_COLOR_GOLD))
+        if(game.CheckEndGame(piece_to_kill, is_gold))
         {
             game.Reset();
             return true;
         }
         return false;
+    }
+
+    void ChangeTurn(bool endgame, 
+        bool* is_gold_turn, 
+        std::function<void(void)> callback)
+    {
+        if(!endgame)
+        {
+            *is_gold_turn = !(*is_gold_turn);
+            is_turn = !is_turn;
+        }else{
+            callback();
+            *is_gold_turn = true;
+            is_turn = player_color == PIECE_COLOR_GOLD;
+        }
     }
 };
 

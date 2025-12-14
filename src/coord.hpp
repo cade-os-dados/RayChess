@@ -1,9 +1,16 @@
 #pragma once
 #include <raylib.h>
 #include <vector>
+#include <algorithm>
 
 /* Matrix position, between 0 and 7 that represents the board */
-struct MatrixPosition{int row, col;};
+struct MatrixPosition{
+    int row, col;
+    bool operator==(const MatrixPosition& other) const
+    {
+        return row == other.row && col == other.col;
+    }
+};
 struct Coords{ 
     int x, y;
     Vector2 to_vec2(){ return {(float)x, (float)y}; }
@@ -41,4 +48,9 @@ MatrixPosition from_coords(Coords coords, CelDim cel)
         (int)(coords.y / cel.height),
         (int)(coords.x / cel.width)
     };
+}
+
+bool ContainsMatrixPos(const VecMatrixPosition& vec, MatrixPosition pos)
+{
+    return std::count(vec.begin(),vec.end(), pos); // se 0 false, se >= 1 true
 }

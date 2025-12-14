@@ -43,11 +43,12 @@ public:
         auto [x_, y_] = board -> trunc_coord(mousePos.x, mousePos.y);
         pos.x = (float)x_; pos.y = (float)y_;
     }
-    void GetMatrixPos(Vector2 mousePos)
+    MatrixPosition GetMatrixPos(Vector2 mousePos)
     {
         auto [m_x, m_y] = board -> from_coord(mousePos.x, mousePos.y);
         matrix_pos_x = m_x;
         matrix_pos_y = m_y;
+        return {matrix_pos_x, matrix_pos_y};
     }
 
     void Reset()

@@ -9,6 +9,17 @@ enum PIECE_COLOR{
     PIECE_COLOR_VIOLET
 };
 
+enum DIRECTION{
+    DIAGONAL_LEFT_BOTTOM,
+    DIAGONAL_LEFT_TOP,
+    DIAGONAL_RIGHT_BOTTOM,
+    DIAGONAL_RIGHT_TOP,
+    TOP,
+    BOTTOM,
+    LEFT,
+    RIGHT
+};
+
 class InfinityMove{
 private:
     Board* m_Board;
@@ -19,14 +30,7 @@ public:
     bool BreakCondition(int k, int l, int is_gold);
     bool AppendAndCheck(VecMatrixPosition& coords);
     void ResetParams(int i, int j, bool gold);
-    void DiagonalLeftBottom(VecMatrixPosition& coords, int i, int j, bool gold);
-    void DiagonalLeftTop(VecMatrixPosition& coords, int i, int j, bool gold);
-    void DiagonalRightBottom(VecMatrixPosition& coords, int i, int j, bool gold);
-    void DiagonalRightTop(VecMatrixPosition& coords, int i, int j, bool gold);
-    void Top(VecMatrixPosition& coords, int i, int j, bool gold);
-    void Bottom(VecMatrixPosition& coords, int i, int j, bool gold);
-    void Left(VecMatrixPosition& coords, int i, int j, bool gold);
-    void Right(VecMatrixPosition&, int, int, bool);
+    void SetMovement(VecMatrixPosition& coords, MatrixPosition actual_pos, bool gold, DIRECTION direction);
 };
 
 class Peca {

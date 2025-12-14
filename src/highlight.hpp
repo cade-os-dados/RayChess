@@ -35,7 +35,7 @@ public:
     std::shared_ptr<Peca> getPiece(void){
         if (idx == 0) return nullptr;
         else if (idx > 0) return (*this->gold)[idx-1];
-        else if (idx < 0) return (*this->violet)[abs(idx)-1];
+        else return (*this->violet)[abs(idx)-1]; // idx < 0
     }
     std::tuple<std::shared_ptr<Peca>, int, bool> GetInfo(){
         return std::make_tuple(getPiece(), getPieceIndex(), IsGold());

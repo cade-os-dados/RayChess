@@ -124,22 +124,16 @@ public:
 
     VecMatrixPosition PossibleMoveCoords(int i, int j) override
     {
-        VecMatrixPosition coords;
-        
-        // right 1
-        append_coords(coords,i+1,j+2);
-        append_coords(coords,i+1,j-2);
-        // right 2
-        append_coords(coords,i+2,j+1);
-        append_coords(coords,i+2,j-1);
-        // left 1
-        append_coords(coords,i-1,j+2);
-        append_coords(coords,i-1,j-2);
-        // left 2
-        append_coords(coords,i-2,j+1);
-        append_coords(coords,i-2,j-1);
-
-        return coords;
+        return possible_movements({i,j},{
+            { 1,  2}, // RIGHT - 2 BOTTOM
+            { 1, -2}, // RIGHT - 2 TOP
+            { 2,  1}, // 2 RIGHT - BOTTOM
+            { 2, -1}, // 2 RIGHT - TOP
+            {-1,  2}, // LEFT - 2 BOTTOM
+            {-1, -2}, // LEFT - 2 TOP
+            {-2,  1}, // 2 LEFT - 1 BOTTOM
+            {-2, -1}  // 2 LEFT - 1 TOP
+        });
     }
 };
 
@@ -152,14 +146,12 @@ public:
 
     VecMatrixPosition PossibleMoveCoords(int i, int j) override
     {
-        VecMatrixPosition coords;
-
-        this->move->Left(coords,i,j,this->is_gold);
-        this->move->Right(coords,i,j,this->is_gold);
-        this->move->Top(coords,i,j,this->is_gold);
-        this->move->Bottom(coords,i,j,this->is_gold);
-
-        return coords;
+        return possible_infinity_movements(this->move,{i,j},this->is_gold,{
+            LEFT,
+            RIGHT,
+            TOP,
+            BOTTOM
+        });
     }
 };
 
@@ -172,14 +164,12 @@ public:
 
     VecMatrixPosition PossibleMoveCoords(int i, int j) override 
     {
-        VecMatrixPosition coords;
-
-        this->move->DiagonalLeftBottom(coords,i,j,this->is_gold);
-        this->move->DiagonalRightTop(coords,i,j,this->is_gold);
-        this->move->DiagonalRightBottom(coords,i,j,this->is_gold);
-        this->move->DiagonalLeftTop(coords,i,j,this->is_gold);
-
-        return coords;
+        return possible_infinity_movements(this->move,{i,j},this->is_gold,{
+            DIAGONAL_LEFT_BOTTOM,
+            DIAGONAL_RIGHT_BOTTOM,
+            DIAGONAL_LEFT_TOP,
+            DIAGONAL_RIGHT_TOP
+        });
     }
 };
 
@@ -191,18 +181,16 @@ public:
     }
     VecMatrixPosition PossibleMoveCoords(int i, int j) override 
     {
-        VecMatrixPosition coords;
-
-        this->move->DiagonalLeftBottom(coords,i,j,this->is_gold);
-        this->move->DiagonalRightTop(coords,i,j,this->is_gold);
-        this->move->DiagonalRightBottom(coords,i,j,this->is_gold);
-        this->move->DiagonalLeftTop(coords,i,j,this->is_gold);
-        this->move->Left(coords,i,j,this->is_gold);
-        this->move->Right(coords,i,j,this->is_gold);
-        this->move->Top(coords,i,j,this->is_gold);
-        this->move->Bottom(coords,i,j,this->is_gold);
-
-        return coords;
+        return possible_infinity_movements(this->move,{i,j},this->is_gold,{
+            DIAGONAL_LEFT_BOTTOM,
+            DIAGONAL_RIGHT_BOTTOM,
+            DIAGONAL_LEFT_TOP,
+            DIAGONAL_RIGHT_TOP,
+            LEFT,
+            RIGHT,
+            TOP,
+            BOTTOM
+        });
     }
 };
 
@@ -214,21 +202,16 @@ public:
     }
     VecMatrixPosition PossibleMoveCoords(int i, int j) override
     {
-        VecMatrixPosition coords;
-        append_coords(coords,i,j+1); // up
-        append_coords(coords,i,j-1); // down
-
-        // right
-        append_coords(coords,i+1,j);
-        append_coords(coords,i+1,j+1); // diagonal
-        append_coords(coords,i+1,j-1); // diagonal
-
-        // left
-        append_coords(coords,i-1,j);
-        append_coords(coords,i-1,j+1); // diagonal
-        append_coords(coords,i-1,j-1); // diagonal
-
-        return coords;
+        return possible_movements({i,j},{
+            { 0,  1}, // BOTTOM
+            { 0, -1}, // TOP
+            { 1,  0}, // RIGHT
+            { 1,  1}, // RIGHT - BOTTOM
+            { 1, -1}, // RIGHT - TOP
+            {-1,  0}, // LEFT
+            {-1,  1}, // LEFT - BOTTOM
+            {-1, -1}  // LEFT - TOP
+        });
     }
 };
 

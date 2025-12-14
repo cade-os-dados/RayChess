@@ -10,6 +10,10 @@ struct MatrixPosition{
     {
         return row == other.row && col == other.col;
     }
+    MatrixPosition operator+(const MatrixPosition& other) const
+    {
+        return {row+other.row, col+other.col};
+    }
 };
 struct Coords{ 
     int x, y;

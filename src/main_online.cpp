@@ -61,6 +61,7 @@ int main()
         Server s(io_context, 4433);
         io_context.run();
     }); // io_context.run();
+    SyncMove sync_move;
 
     Player player1(PIECE_COLOR_GOLD);
 
@@ -95,9 +96,10 @@ int main()
     }
     
     // bool debug = true;
-    while(!WindowShouldClose())
+   while(!WindowShouldClose())
     {
         bool endgame = false;
+        bool synchronize = false;
 
         BeginDrawing(); 
         ClearBackground(RAYWHITE);
@@ -122,31 +124,21 @@ int main()
         DrawRectangle(200,H+10,20,20,GOLD);
         DrawRectangle(200,H+40,20,20,VIOLET);
         DrawText(game.GoldPoints(), 240, H+10, 20, WHITE);
-        DrawText(game.VioletPoints(), 240, H+40, 20, WHITE); 
+        DrawText(game.VioletPoints(), 240, H+40, 20, WHITE);
+        EndDrawing(); 
 
+        // lógica
         if(!player1.is_turn)
         {
             if(!request_queue.empty()) // notificacao assincrona!
             {
-                
                 std::string message = request_queue.pop();
                 if(is_sync_move(message))
                 {
-                    // parse
-                    SyncMove sync = parse(message);
-                    printf("Move: %d -> (%d,%d)\n", sync.piece, sync.mov.row, sync.mov.col);
-
-                    endgame = player1.Sync(game,sync,cel);
-                    if(!endgame)
-                    {
-                        is_gold_turn = !is_gold_turn;
-                        player1.is_turn = true;
-                    }else{
-                        is_gold_turn = true;
-                        player1.is_turn = player1.player_color == PIECE_COLOR_GOLD;
-                    }
-                }else{printf("Mensagem rejeitada\n");}
-
+                    synchronize = true;
+                    sync_move = parse(message);
+                    printf("Move: %d -> (%d,%d)\n", sync_move.piece, sync_move.mov.row, sync_move.mov.col);
+                }
             }
         }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -154,10 +146,7 @@ int main()
             std::cout << "------------------------------\nRodada: " << rodada << std::endl;
             
             c_highlight.UpdateClicked(true);
-
             Vector2 mousePosition = GetMousePosition();
-            std::cout << "[Debug] - Position - X: " << mousePosition.x << " Y: " << mousePosition.y << std::endl;
-            
             int where_clicked = board.CheckWhereCliked();
             c_highlight.setHighlight(where_clicked, is_gold_turn, cache_possible_moves);
 
@@ -168,46 +157,28 @@ int main()
                     c_highlight.ReHighlight(where_clicked, is_gold_turn, cache_possible_moves);
                 }
                 
-                game.GetMatrixPos(mousePosition);
-                game.GetTruncatedPos(mousePosition);
+                MatrixPosition new_pos = game.GetMatrixPos(mousePosition);
 
-                for (MatrixPosition new_pos : cache_possible_moves)
+                if(ContainsMatrixPos(cache_possible_moves, new_pos))
                 {
-                    if(game.CanMove(new_pos))
-                    {
-                        auto [piece_ptr, piece_idx, is_gold_piece] = c_highlight.GetInfo();
-                        int piece = game.Kill(new_pos, is_gold_piece);
-                        game.Move(piece_idx, new_pos, cel);
+                    synchronize = true;
 
-                        // send across network
-                        push_and_notify(to_str({piece_idx,new_pos}));
-                        
-                        c_highlight.Change(false);
-                        if(game.CheckEndGame(piece, is_gold_piece))
-                        {
-                            endgame = true;
-                            game.Reset();
-                        }
-                            
-                        // player1.is_turn = false;
-                        // is_gold_turn = !is_gold_turn;
-
-                        if(!endgame)
-                        {
-                            is_gold_turn = !is_gold_turn;
-                            player1.is_turn = false;
-                        }else{
-                            is_gold_turn = true;
-                            player1.is_turn = player1.player_color == PIECE_COLOR_GOLD;
-                        }
-
-                        break;
-                    }
+                    int piece_idx = c_highlight.getPieceIndex();
+                    // send across network
+                    sync_move = {piece_idx, new_pos};
+                    push_and_notify(to_str(sync_move));
+                    // request_queue.push(to_str(sync_move));
+                    c_highlight.Change(false);
                 }
             }
             board.Debug();
         }
-        EndDrawing();
+
+        if(synchronize)
+        {
+            endgame = player1.Sync(game,sync_move,cel);
+            player1.ChangeTurn(endgame,&is_gold_turn,[](){});
+        }
     }
 
     th.join();

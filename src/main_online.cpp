@@ -3,15 +3,20 @@
 #include <vector>
 #include <memory>
 #include "highlight.hpp"
-#include "net/sync_server.hpp"
+// #include "net/sync_server.hpp"
+#include "net/interface.hpp"
 #include "coord.hpp"
 #include "player.hpp"
+#include "render.hpp"
 
 const int W = 800;
 const int H = 600;
 CelDim cel = to_cel_dim({W,H});
 HighLightControler c_highlight;
 bool is_gold_turn = true;
+
+NETWORK_SIDE SIDE = SERVER_SIDE;
+SyncMove sync_move;
 
 using namespace std;
 
@@ -56,12 +61,7 @@ using namespace std;
 int main()
 {
     // NET SERVER
-    std::thread th([]{
-        boost::asio::io_context io_context;
-        Server s(io_context, 4433);
-        io_context.run();
-    }); // io_context.run();
-    SyncMove sync_move;
+    std::thread th(start_server);
 
     Player player1(PIECE_COLOR_GOLD);
 
@@ -96,89 +96,9 @@ int main()
     }
     
     // bool debug = true;
-   while(!WindowShouldClose())
+    while(!WindowShouldClose())
     {
-        bool endgame = false;
-        bool synchronize = false;
-
-        BeginDrawing(); 
-        ClearBackground(RAYWHITE);
-        
-        board.Draw();
-        // ---- PEÇAS ----
-        for (const auto& peca : gold) { peca->Draw(); }
-        for (const auto& peca : violet) { peca->Draw(); }
-
-        /* MENU EM BAIXO DO TABULEIRO */
-        cartao_color = is_gold_turn ? GOLD : VIOLET;
-        const char* texto = is_gold_turn ? "GOLD" : "VIOLET";
-        // em baixo do tabuleiro...
-        DrawRectangle(0,H,W,100,DARKGRAY);
-        // welcome
-        DrawText("Welcome, hehehe", 620, H+10, 20, LIGHTGRAY);
-        // cartao
-        DrawText("QUEM JOGA: ", 10, H+10, 20, WHITE);
-        DrawRectangle(10,H+40,20,20,cartao_color);
-        DrawText(texto,40,H+40,20,WHITE);
-
-        DrawRectangle(200,H+10,20,20,GOLD);
-        DrawRectangle(200,H+40,20,20,VIOLET);
-        DrawText(game.GoldPoints(), 240, H+10, 20, WHITE);
-        DrawText(game.VioletPoints(), 240, H+40, 20, WHITE);
-        EndDrawing(); 
-
-        // lógica
-        if(!player1.is_turn)
-        {
-            if(!request_queue.empty()) // notificacao assincrona!
-            {
-                std::string message = request_queue.pop();
-                if(is_sync_move(message))
-                {
-                    synchronize = true;
-                    sync_move = parse(message);
-                    printf("Move: %d -> (%d,%d)\n", sync_move.piece, sync_move.mov.row, sync_move.mov.col);
-                }
-            }
-        }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
-            rodada++;
-            std::cout << "------------------------------\nRodada: " << rodada << std::endl;
-            
-            c_highlight.UpdateClicked(true);
-            Vector2 mousePosition = GetMousePosition();
-            int where_clicked = board.CheckWhereCliked();
-            c_highlight.setHighlight(where_clicked, is_gold_turn, cache_possible_moves);
-
-            if(c_highlight.is_on())
-            {
-                if(c_highlight.CheckReHighlight(where_clicked))
-                {
-                    c_highlight.ReHighlight(where_clicked, is_gold_turn, cache_possible_moves);
-                }
-                
-                MatrixPosition new_pos = game.GetMatrixPos(mousePosition);
-
-                if(ContainsMatrixPos(cache_possible_moves, new_pos))
-                {
-                    synchronize = true;
-
-                    int piece_idx = c_highlight.getPieceIndex();
-                    // send across network
-                    sync_move = {piece_idx, new_pos};
-                    push_and_notify(to_str(sync_move));
-                    // request_queue.push(to_str(sync_move));
-                    c_highlight.Change(false);
-                }
-            }
-            board.Debug();
-        }
-
-        if(synchronize)
-        {
-            endgame = player1.Sync(game,sync_move,cel);
-            player1.ChangeTurn(endgame,&is_gold_turn,[](){});
-        }
+        render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,SIDE);
     }
 
     th.join();

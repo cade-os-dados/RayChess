@@ -45,3 +45,5 @@ public:
         return queue.empty();
     }
 };
+
+MessageQueue request_queue, response_queue;

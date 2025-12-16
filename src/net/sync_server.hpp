@@ -19,7 +19,7 @@
 
 std::mutex cv_mutex;
 std::condition_variable cv;
-MessageQueue request_queue, response_queue;
+// MessageQueue request_queue, response_queue;
 
 using boost::asio::ip::tcp;
 using boost::system::error_code;

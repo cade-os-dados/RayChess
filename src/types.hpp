@@ -4,6 +4,12 @@
 #include <raylib.h>
 #include "coord.hpp"
 
+enum NETWORK_SIDE 
+{
+    SERVER_SIDE,
+    CLIENT_SIDE
+};
+
 enum PIECE_COLOR{
     PIECE_COLOR_GOLD,
     PIECE_COLOR_VIOLET

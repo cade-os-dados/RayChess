@@ -34,6 +34,7 @@ private:
     int matrix_pos_x, matrix_pos_y;
     pecas *gold_ptr, *violet_ptr;
     bool* is_gold_turn;
+    int counter;
 public:
     Game(pecas* gold_, pecas* violet_, bool* is_gold, Board* board_) 
         : gold_ptr(gold_), violet_ptr(violet_), is_gold_turn(is_gold),

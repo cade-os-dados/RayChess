@@ -29,6 +29,11 @@ public:
         this -> ResetPositions();
         this -> setupColors();
     }
+    void get_dimensions(int* width, int* height)
+    {
+        *width = x*8;
+        *height = y*8;
+    }
     void ResetPositions()
     {
         for(int i = 0; i < 8; i++){

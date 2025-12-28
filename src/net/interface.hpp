@@ -16,7 +16,8 @@ void start_client()
     std::cout << "handshake ok\n";
 
     
-    client.write("ping");
+    // client.write("ping");
+    
     // std::cout << "Receveid: " << response << std::endl;
     // response_queue.push(response);
 
@@ -67,7 +68,11 @@ void start_client()
             }
         }
 
+        // cancel read operation
         client.cancel();
+
+        std::cout << "finishing...\n";
+        client.write("Finish connection");
     });
     
     client.run(); // O run só será chamado após o loop terminar

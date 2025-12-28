@@ -87,21 +87,22 @@ SCENE render_game_scene(
     NETWORK_SIDE net_side)
 {
     /* Vamos fazer o client primeiro pois é onde estou mexendo... */
-    static std::once_flag flag;
-    static bool pinger = false;
-
+    static bool start = false;
+    
     /* CHAMAR A THREAD DE NETWORK */
     if (net_side == CLIENT_SIDE && START_CLIENT_NETWORK.load())
     {
         std::cout << "Iniciando network...\n";
         START_CLIENT_NETWORK.store(false);
         std::thread(start_client).detach();
-        // request_queue.push("ping");
-        if(pinger) request_queue.push("ping");
+        start = true;
+    }
 
-        std::call_once(flag,[](){
-            pinger = true;
-        });
+    if(start && net_side == CLIENT_SIDE)
+    {
+        // receber a mensagem
+        if(!player.is_turn) request_queue.push("ping");
+        start = false;
     }
         
     bool endgame = false;
@@ -111,7 +112,7 @@ SCENE render_game_scene(
     render_game(board, is_gold_turn, gold, violet, game);
     // ------------- END RENDER -----------
 
-    // lógica
+    // ------------- LÓGICA DO GAME ------------
     if(!player.is_turn)
     {
         MessageQueue* queue = (net_side == SERVER_SIDE) ? &request_queue : &response_queue;
@@ -124,6 +125,8 @@ SCENE render_game_scene(
                 synchronize = true;
                 sync_move = parse(message);
                 printf("Move: %d -> (%d,%d)\n", sync_move.piece, sync_move.mov.row, sync_move.mov.col);
+            }else if(message == "Finish connection"){
+                player.ChangeTurn(false,&is_gold_turn,[](){});
             }
         }
     }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
@@ -158,7 +161,17 @@ SCENE render_game_scene(
                 c_highlight.Change(false);
             }
         }
-        // board.Debug();
+    }else{
+        if(net_side == SERVER_SIDE && !request_queue.empty())
+        {
+            std::cout << "checking: " << request_queue.front() << " " << request_queue.size() << std::endl;
+            if(request_queue.front() == "Finish connection")
+            {
+                push_and_notify("finish");
+                player.ChangeTurn(false,&is_gold_turn,[](){});
+            }
+                
+        }
     }
 
     if(synchronize)
@@ -168,7 +181,7 @@ SCENE render_game_scene(
             player.ChangeTurn(endgame,&is_gold_turn,[](){});
         else
             player.ChangeTurn(endgame,&is_gold_turn,[&player](){
-                if(!player.is_turn) request_queue.push("ping");
+                start = true;
             });
     }
     

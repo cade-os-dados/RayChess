@@ -64,7 +64,7 @@ public:
 private:
     void do_read(int timeout = 30)
     {
-        error_code ec;
+        boost::system::error_code ec;
         // std::cout << "reading...\n";
         std::size_t length = ssl_stream.read_some(boost::asio::buffer(data), ec);
         // std::cout << "readed...\n";
@@ -91,7 +91,7 @@ private:
             response = response_queue.pop();
         }
   
-        error_code ec;
+        boost::system::error_code ec;
         std::cout << "Sending... " << response << std::endl;
         ssl_stream.write_some(boost::asio::buffer(response),ec);
         if(!ec)

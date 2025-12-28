@@ -39,6 +39,18 @@ public:
         return msg;
     }
 
+    size_t size()
+    {
+        std::unique_lock<std::mutex> lock(mtx);
+        return queue.size();
+    }
+
+    std::string front()
+    {
+        std::unique_lock<std::mutex> lock(mtx);
+        return queue.front();
+    }
+
     bool empty()
     {
         std::lock_guard<std::mutex> lock(mtx);

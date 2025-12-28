@@ -19,11 +19,6 @@ bool is_gold_turn = true;
 NETWORK_SIDE SIDE = CLIENT_SIDE;
 SyncMove sync_move;
 
-/*
-    TESTE
-*/
-
-
 using namespace std;
 
 /*
@@ -68,46 +63,44 @@ using namespace std;
 
 int main()
 {
-    // NET SERVER
-    // std::thread th(start_client);
-
-    Player player1(PIECE_COLOR_VIOLET);
-
-    // ---- TABULEIRO ----
-    int n = 8;
-    int cel_width = (int) (W / n); // delegar ao board
-    int cel_height = (int) (H / n); // delegar ao board
-    Board board(cel_width, cel_height, n);
-    InfinityMove move(&board);
-
-    InitWindow(W, H+100, "Client");
-    SetTargetFPS(60);
-    SetConfigFlags(FLAG_MSAA_4X_HINT);
-
-    pecas gold = InitPecas(true, &move);
-    pecas violet = InitPecas(false, &move);
-
-    VecMatrixPosition cache_possible_moves;
-    c_highlight.SetPieces(&gold,true);
-    c_highlight.SetPieces(&violet,false);
-    c_highlight.SetBoardPtr(&board);
-
-    Game game(&gold, &violet, &is_gold_turn, &board);
-
-    SCENE scene = MENU_SCENE;
-    
-    // bool debug = true;
-    while(!WindowShouldClose())
+    // escopo
     {
-        switch(scene)
-        {
-            case MENU_SCENE: scene = render_menu_scene(); break;
-            case GAME_SCENE: scene = render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,SIDE); break;
-            case CONTINUE_SCENE: scene = render_continue_scene(); break;
-        }
-    }
+        Player player1(PIECE_COLOR_VIOLET);
 
-    // th.join();
+        // ---- TABULEIRO ----
+        int n = 8;
+        int cel_width = (int) (W / n); // delegar ao board
+        int cel_height = (int) (H / n); // delegar ao board
+        Board board(cel_width, cel_height, n);
+        InfinityMove move(&board);
+
+        SetConfigFlags(FLAG_MSAA_4X_HINT);
+        InitWindow(W, H+100, "Client");
+        SetTargetFPS(60);
+        
+        pecas gold = InitPecas(true, &move);
+        pecas violet = InitPecas(false, &move);
+
+        VecMatrixPosition cache_possible_moves;
+        c_highlight.SetPieces(&gold,true);
+        c_highlight.SetPieces(&violet,false);
+        c_highlight.SetBoardPtr(&board);
+
+        Game game(&gold, &violet, &is_gold_turn, &board);
+
+        SCENE scene = MENU_SCENE;
+        
+        while(!WindowShouldClose())
+        {
+            switch(scene)
+            {
+                case MENU_SCENE: scene = render_menu_scene(); break;
+                case GAME_SCENE: scene = render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,SIDE); break;
+                case CONTINUE_SCENE: scene = render_continue_scene(); break;
+            }
+        }
+    } // call ~Peca() to unload texture
+
     CloseWindow();
     return 0;
 }

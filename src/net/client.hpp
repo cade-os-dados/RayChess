@@ -5,6 +5,9 @@
 
 #define DEBUG true
 
+// uso externo no código...
+std::atomic<bool> START_CLIENT_NETWORK{false};
+
 using boost::asio::ip::tcp;
 namespace asio = boost::asio;
 
@@ -39,8 +42,13 @@ public:
     ~Client(){ this -> shutdown(); delete ssl_stream; }
     void shutdown(){
         boost::system::error_code ec;
-        ssl_stream->shutdown(ec);
-        if(ec) std::cerr << "Shutdown error: " << ec.message() << std::endl;
+
+        std::cout << "Shutting down\n";
+        ssl_stream -> lowest_layer().close(ec);
+        if(ec) std::cerr << "Close error: " << ec.message() << std::endl;
+
+        std::cout << "shutdown sucessful\n";
+
     }
     void connect(std::string_view ip, std::string_view port)
     {
@@ -90,11 +98,13 @@ public:
             {
                 if (cancelled) {
                     // Cancelado manualmente
+                    std::cout << "Operation cancelled\n";
                     return;
                 }
 
                 if (error == asio::error::operation_aborted) {
                     // Cancelamento via cancel()
+                    std::cout << "Operation aborted\n";
                     return;
                 }
 
@@ -103,10 +113,8 @@ public:
                 }
 
                 std::string data(buffer.data(), len);
-                std::cout << "Data:" << data << std::endl;
                 // processar data
                 lambda(data);
-                std::cout << "lambda called\n";
                 async_rcv(lambda);
             }
         );

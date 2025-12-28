@@ -48,6 +48,7 @@ SCENE render_menu_scene()
     if(button.Clicked())
     {
         RUNNING_CLIENT_FLAG.store(true);
+        START_CLIENT_NETWORK.store(true);
         return GAME_SCENE;
     }else{
         return MENU_SCENE;

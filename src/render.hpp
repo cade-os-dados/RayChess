@@ -87,14 +87,23 @@ SCENE render_game_scene(
     NETWORK_SIDE net_side)
 {
     /* Vamos fazer o client primeiro pois é onde estou mexendo... */
+    static std::once_flag flag;
+    static bool pinger = false;
 
-    static std::once_flag net_flag;
+    /* CHAMAR A THREAD DE NETWORK */
+    if (net_side == CLIENT_SIDE && START_CLIENT_NETWORK.load())
+    {
+        std::cout << "Iniciando network...\n";
+        START_CLIENT_NETWORK.store(false);
+        std::thread(start_client).detach();
+        // request_queue.push("ping");
+        if(pinger) request_queue.push("ping");
 
-    std::call_once(net_flag,[&net_side](){
-        if (net_side == CLIENT_SIDE)
-            std::thread(start_client).detach();
-    });
-
+        std::call_once(flag,[](){
+            pinger = true;
+        });
+    }
+        
     bool endgame = false;
     bool synchronize = false;
 
@@ -149,7 +158,7 @@ SCENE render_game_scene(
                 c_highlight.Change(false);
             }
         }
-        board.Debug();
+        // board.Debug();
     }
 
     if(synchronize)
@@ -162,9 +171,6 @@ SCENE render_game_scene(
                 if(!player.is_turn) request_queue.push("ping");
             });
     }
-
-    // if(th.joinable())
-    //     th.join();
     
     return endgame ? CONTINUE_SCENE : GAME_SCENE;
 }

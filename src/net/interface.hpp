@@ -4,6 +4,9 @@
 #include "client.hpp"
 #include "safe_queue.hpp"
 #include "sync_server.hpp"
+#include <atomic>
+
+std::atomic<bool> RUNNING_CLIENT_FLAG{true};
 
 void start_client()
 {  
@@ -17,17 +20,41 @@ void start_client()
     // std::cout << "Receveid: " << response << std::endl;
     // response_queue.push(response);
 
-    std::thread receiver([&client](){
-        while(true)
-        {
-            std::string response = client.rcv();
-            std::cout << "Received: " << response << std::endl;
-            response_queue.push(response);
-        }
+    // std::thread receiver([&client]{
+    //     while(RUNNING_CLIENT_FLAG)
+    //     {
+    //         std::string response = client.rcv();
+    //         if(response.size() > 0)
+    //         {
+    //             std::cout << "Received: " << response << std::endl
+    //                 << "FLAG: " << RUNNING_CLIENT_FLAG << std::endl;
+    //             response_queue.push(response);
+    //         }
+    //     }
+    // });
+
+    // std::thread([&client]{
+    //     while(RUNNING_CLIENT_FLAG)
+    //     {
+    //         std::string response = client.rcv();
+    //         if(response.size() > 0)
+    //         {
+    //             std::cout << "Received: " << response << std::endl
+    //                 << "FLAG: " << RUNNING_CLIENT_FLAG << std::endl;
+    //             response_queue.push(response);
+    //         }
+    //     }
+    //     std::cout << "OK finished\n";
+    // }).detach();
+
+    client.async_rcv([&](std::string response){
+        std::cout << "Received: " << response << std::endl
+                << "FLAG: " << RUNNING_CLIENT_FLAG << std::endl;
+        response_queue.push(response);
     });
 
     std::thread sender([&client](){
-        while(true)
+        while(RUNNING_CLIENT_FLAG)
         {
             if(!request_queue.empty())
             {
@@ -39,11 +66,16 @@ void start_client()
                 client.write(msg_to_send);
             }
         }
-    });
 
-    sender.join();
-    receiver.join();
+        client.cancel();
+    });
+    
     client.run(); // O run só será chamado após o loop terminar
+    sender.join();
+    std::cout << "Sender joinned\n";
+    // receiver.join();
+    
+    std::cout << "OK exit scope\n";
 }
 
 void start_server()

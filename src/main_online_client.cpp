@@ -3,13 +3,12 @@
 #include <vector>
 #include <memory>
 #include "highlight.hpp"
-// #include "net/client.hpp"
-// #include "net/safe_queue.hpp"
-// #include "net/sync_server.hpp"
-#include "net/interface.hpp"
+// #include "net/interface.hpp"
 #include "coord.hpp"
 #include "player.hpp"
 #include "render.hpp"
+#include "menu.hpp"
+#include "scenes.hpp"
 
 const int W = 800;
 const int H = 600;
@@ -19,6 +18,11 @@ bool is_gold_turn = true;
 
 NETWORK_SIDE SIDE = CLIENT_SIDE;
 SyncMove sync_move;
+
+/*
+    TESTE
+*/
+
 
 using namespace std;
 
@@ -65,7 +69,7 @@ using namespace std;
 int main()
 {
     // NET SERVER
-    std::thread th(start_client);
+    // std::thread th(start_client);
 
     Player player1(PIECE_COLOR_VIOLET);
 
@@ -89,14 +93,21 @@ int main()
     c_highlight.SetBoardPtr(&board);
 
     Game game(&gold, &violet, &is_gold_turn, &board);
+
+    SCENE scene = MENU_SCENE;
     
     // bool debug = true;
     while(!WindowShouldClose())
     {
-        render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,SIDE);
+        switch(scene)
+        {
+            case MENU_SCENE: scene = render_menu_scene(); break;
+            case GAME_SCENE: scene = render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,SIDE); break;
+            case CONTINUE_SCENE: scene = render_continue_scene(); break;
+        }
     }
 
-    th.join();
+    // th.join();
     CloseWindow();
     return 0;
 }

@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include "player.hpp"
 #include "highlight.hpp"
+#include "scenes.hpp"
 
 inline void render_points(int height, Game& game)
 {
@@ -72,7 +73,7 @@ inline void render_game(
 
 // NETWORK_SIDE SIDE = CLIENT_SIDE;
 
-void render_game_scene(
+SCENE render_game_scene(
     VecMatrixPosition& cache_possible_moves, 
     Board& board,
     pecas& gold,
@@ -85,6 +86,15 @@ void render_game_scene(
     HighLightControler& c_highlight,
     NETWORK_SIDE net_side)
 {
+    /* Vamos fazer o client primeiro pois é onde estou mexendo... */
+
+    static std::once_flag net_flag;
+
+    std::call_once(net_flag,[&net_side](){
+        if (net_side == CLIENT_SIDE)
+            std::thread(start_client).detach();
+    });
+
     bool endgame = false;
     bool synchronize = false;
 
@@ -109,7 +119,7 @@ void render_game_scene(
         }
     }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        
+        /* Último refactor terá que ser nesse sistema de highlight para ficar mais idiomático */
         c_highlight.UpdateClicked(true);
         Vector2 mousePosition = GetMousePosition();
         int where_clicked = board.CheckWhereCliked();
@@ -152,5 +162,9 @@ void render_game_scene(
                 if(!player.is_turn) request_queue.push("ping");
             });
     }
-}
+
+    // if(th.joinable())
+    //     th.join();
     
+    return endgame ? CONTINUE_SCENE : GAME_SCENE;
+}

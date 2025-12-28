@@ -4,7 +4,7 @@
 #include <memory>
 #include "highlight.hpp"
 // #include "net/sync_server.hpp"
-#include "net/interface.hpp"
+// #include "net/interface.hpp"
 #include "coord.hpp"
 #include "player.hpp"
 #include "render.hpp"

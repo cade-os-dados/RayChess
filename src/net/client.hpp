@@ -28,6 +28,7 @@ private:
     SSL_stream* ssl_stream;
     int max_retries{3}, retries{0};
     boost::asio::io_context io;
+    std::atomic<bool> cancelled{false};
 public:
     Client(boost::asio::ssl::verify_mode mode = boost::asio::ssl::verify_peer)
     {
@@ -54,6 +55,17 @@ public:
             std::cout << "Requisicao enviada." << std::endl;
         ssl_stream -> write_some(asio::buffer(string));
     }
+
+    /*
+        Aqui ele trava por que read_some é síncrono
+
+        Para nao modificar podemos tentar mudar um pouco o fluxo
+        no jogo...
+
+        Quando dá o endgame, tem que colocar tanto em server quanto em client
+        se deseja continuar e meio que criar um handshake para saber que
+        está tudo certo...
+    */
     std::string rcv()
     {
         size_t len = ssl_stream -> read_some(asio::buffer(buffer),error);
@@ -66,6 +78,44 @@ public:
         retries = len == 0 ? retries + 1 : retries;
         if(retries == max_retries) throw std::runtime_error("Max retries exceeded");
         return std::string(buffer.data(), len);
+    }
+
+
+    void async_rcv(std::function<void(std::string)> lambda)
+    {
+        std::cout << "callback called\n";
+        ssl_stream->async_read_some(
+            asio::buffer(buffer),
+            [this,lambda](const boost::system::error_code& error, std::size_t len)
+            {
+                if (cancelled) {
+                    // Cancelado manualmente
+                    return;
+                }
+
+                if (error == asio::error::operation_aborted) {
+                    // Cancelamento via cancel()
+                    return;
+                }
+
+                if (error) {
+                    throw boost::system::system_error(error);
+                }
+
+                std::string data(buffer.data(), len);
+                std::cout << "Data:" << data << std::endl;
+                // processar data
+                lambda(data);
+                std::cout << "lambda called\n";
+                async_rcv(lambda);
+            }
+        );
+    }
+
+    void cancel()
+    {
+        cancelled.store(true);
+        ssl_stream->lowest_layer().cancel();
     }
 
     std::string request(std::string_view string)

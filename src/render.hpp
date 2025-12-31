@@ -104,6 +104,13 @@ SCENE render_game_scene(
         if(!player.is_turn) request_queue.push("ping");
         start = false;
     }
+
+    if(net_side == SERVER_SIDE && START_SERVER_NETWORK.load())
+    {
+        std::cout << "Starting network server...\n";
+        START_SERVER_NETWORK.store(false);
+        std::thread(start_server).detach();
+    }
         
     bool endgame = false;
     bool synchronize = false;
@@ -164,7 +171,8 @@ SCENE render_game_scene(
     }else{
         if(net_side == SERVER_SIDE && !request_queue.empty())
         {
-            std::cout << "checking: " << request_queue.front() << " " << request_queue.size() << std::endl;
+            // only debug...
+            // std::cout << "checking: " << request_queue.front() << " " << request_queue.size() << std::endl;
             if(request_queue.front() == "Finish connection")
             {
                 push_and_notify("finish");

@@ -74,8 +74,6 @@ int main()
 {
     // escopo
     {
-        std::thread th(start_server);
-
         Player player1(PIECE_COLOR_GOLD);
 
         // ---- TABULEIRO ----
@@ -110,7 +108,6 @@ int main()
                 case CONTINUE_SCENE: scene = render_continue_scene(); break;
             }
         }
-        th.join();
     } // call ~Peca() to unload texture
 
     CloseWindow();

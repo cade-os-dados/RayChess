@@ -48,6 +48,7 @@ SCENE render_menu_scene()
     if(button.Clicked())
     {
         RUNNING_CLIENT_FLAG.store(true);
+        RUNNING_SERVER_FLAG.store(true);
         START_CLIENT_NETWORK.store(true);
         START_SERVER_NETWORK.store(true);
         return GAME_SCENE;
@@ -81,6 +82,7 @@ SCENE render_continue_scene()
     if(botao_nao.Clicked())
     {
         RUNNING_CLIENT_FLAG.store(false);
+        RUNNING_SERVER_FLAG.store(false);
         return MENU_SCENE;
     }
     return CONTINUE_SCENE;

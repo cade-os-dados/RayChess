@@ -16,3 +16,11 @@
 7. Exibir um aviso quando o rei está em cheque
 
 8. Pausar o jogo no cheque-mate
+
+# Bugs
+
+Server - sincronização
+
+Quando coloco a tela de continue se dou não ele vai para MENU SCENE, sendo que para conseguir finalizar ali o game é necessário entrar na GAME_SCENE, pois ali que está encapsulada a lógica de continue...
+
+Teremos que resolver este bug modificando o fluxo ou talvez não inserindo esta tela de continue no server, apenas criando um botão exit talvez...

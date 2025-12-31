@@ -19,6 +19,7 @@
 
 std::mutex cv_mutex;
 std::condition_variable cv;
+std::atomic<bool> RUNNING_SERVER_FLAG{false};
 // MessageQueue request_queue, response_queue;
 
 using boost::asio::ip::tcp;
@@ -140,8 +141,11 @@ private:
             // Aqui você decide: espera a sessão terminar antes de aceitar outra
             // ou simplesmente encerra o servidor após a primeira conexão
 
-            std::cout << "accepting...\n";
-            do_accept(io_context);
+            if(RUNNING_SERVER_FLAG.load())
+            {
+                std::cout << "accepting...\n";
+                do_accept(io_context);
+            }
         }
     }
 

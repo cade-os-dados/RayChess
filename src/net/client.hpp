@@ -5,9 +5,6 @@
 
 #define DEBUG true
 
-// uso externo no código...
-std::atomic<bool> START_CLIENT_NETWORK{false};
-
 using boost::asio::ip::tcp;
 namespace asio = boost::asio;
 

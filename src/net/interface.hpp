@@ -6,6 +6,9 @@
 #include "sync_server.hpp"
 #include <atomic>
 
+// uso externo no código...
+std::atomic<bool> START_CLIENT_NETWORK{false};
+std::atomic<bool> START_SERVER_NETWORK{false};
 std::atomic<bool> RUNNING_CLIENT_FLAG{true};
 
 void start_client()

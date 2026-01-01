@@ -28,15 +28,15 @@ Consegui resolver o bug a princípio, porém falta apenas resolver uma última q
 
 Na tabela verdade teríamos
 
-SC -> server continua
-SN -> server não continua
-CC -> client continua
+SC -> server continua \
+SN -> server não continua \
+CC -> client continua \
 CN -> client não continua
 
 Atualmente estamos com a seguinte regra...
-SN | CC -> crash (será tratado mais adiante)
-SN | CN -> server desliga corretamente
-SC | CC -> partida continua
+SN | CC -> crash (será tratado mais adiante) \
+SN | CN -> server desliga corretamente \
+SC | CC -> partida continua \
 SC | CN -> se CN é enviado antes de SC, SC lida com isso e espera nova conexão, porém se CN é enviado depois vai bugar a sequência de mensagens
 
 Portanto, o que deve ser tratado é SC | CN, tendo que SC esperar pela resposta de CN, e necessariamente teria que ser uma mensagem diferente da finish, tipo CONTINUE YES ou CONTINUE NOT, sei lá...

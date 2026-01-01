@@ -21,6 +21,22 @@
 
 Server - sincronização
 
-Quando coloco a tela de continue se dou não ele vai para MENU SCENE, sendo que para conseguir finalizar ali o game é necessário entrar na GAME_SCENE, pois ali que está encapsulada a lógica de continue...
+~~Quando coloco a tela de continue se dou não ele vai para MENU SCENE, sendo que para conseguir finalizar ali o game é necessário entrar na GAME_SCENE, pois ali que está encapsulada a lógica de continue...~~
+~~Teremos que resolver este bug modificando o fluxo ou talvez não inserindo esta tela de continue no server, apenas criando um botão exit talvez...~~
 
-Teremos que resolver este bug modificando o fluxo ou talvez não inserindo esta tela de continue no server, apenas criando um botão exit talvez...
+Consegui resolver o bug a princípio, porém falta apenas resolver uma última questão...
+
+Na tabela verdade teríamos
+
+SC -> server continua
+SN -> server não continua
+CC -> client continua
+CN -> client não continua
+
+Atualmente estamos com a seguinte regra...
+SN | CC -> crash (será tratado mais adiante)
+SN | CN -> server desliga corretamente
+SC | CC -> partida continua
+SC | CN -> se CN é enviado antes de SC, SC lida com isso e espera nova conexão, porém se CN é enviado depois vai bugar a sequência de mensagens
+
+Portanto, o que deve ser tratado é SC | CN, tendo que SC esperar pela resposta de CN, e necessariamente teria que ser uma mensagem diferente da finish, tipo CONTINUE YES ou CONTINUE NOT, sei lá...

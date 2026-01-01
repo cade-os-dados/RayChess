@@ -86,6 +86,15 @@ void start_client()
     std::cout << "OK exit scope\n";
 }
 
+void ignore_finish_connection_message()
+{
+    if(request_queue.front() == "Finish connection")
+    {
+        request_queue.pop();
+        push_and_notify("finish");
+    }
+}
+
 void start_server()
 {
     boost::asio::io_context io_context;

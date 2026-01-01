@@ -132,9 +132,10 @@ SCENE render_game_scene(
                 synchronize = true;
                 sync_move = parse(message);
                 printf("Move: %d -> (%d,%d)\n", sync_move.piece, sync_move.mov.row, sync_move.mov.col);
-            }else if(message == "Finish connection"){
-                player.ChangeTurn(false,&is_gold_turn,[](){});
             }
+            // else if(message == "Finish connection"){
+            //     player.ChangeTurn(false,&is_gold_turn,[](){});
+            // }
         }
     }else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
@@ -173,12 +174,12 @@ SCENE render_game_scene(
         {
             // only debug...
             // std::cout << "checking: " << request_queue.front() << " " << request_queue.size() << std::endl;
-            if(request_queue.front() == "Finish connection")
-            {
-                push_and_notify("finish");
-                player.ChangeTurn(false,&is_gold_turn,[](){});
-            }
-                
+
+            // if(request_queue.front() == "Finish connection")
+            // {
+            //     push_and_notify("finish");
+            //     player.ChangeTurn(false,&is_gold_turn,[](){});
+            // }
         }
     }
 

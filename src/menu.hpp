@@ -78,11 +78,16 @@ SCENE render_continue_scene()
 
     /*-------------- LOGIC ------------ */
     if(botao_sim.Clicked())
+    {
+        ignore_finish_connection_message();
         return GAME_SCENE;
+    }
+        
     if(botao_nao.Clicked())
     {
         RUNNING_CLIENT_FLAG.store(false);
         RUNNING_SERVER_FLAG.store(false);
+        push_and_notify("finish");
         return MENU_SCENE;
     }
     return CONTINUE_SCENE;

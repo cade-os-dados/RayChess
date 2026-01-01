@@ -92,6 +92,12 @@ private:
             response = response_queue.pop();
         }
   
+        if(response == "finish")
+        {
+            std::cout << "Received message to close server\n";
+            return;
+        }
+
         boost::system::error_code ec;
         std::cout << "Sending... " << response << std::endl;
         ssl_stream.write_some(boost::asio::buffer(response),ec);
@@ -119,6 +125,10 @@ public:
             ctx(server_ca())
     {
         do_accept(io_context);
+    }
+    ~Server(){ 
+        // debug
+        std::cout << "Closing server\n"; 
     }
 
 private:

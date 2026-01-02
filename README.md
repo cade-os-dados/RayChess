@@ -35,6 +35,8 @@ CN -> client não continua
 
 Atualmente estamos com a seguinte regra...
 SN | CC -> crash (será tratado mais adiante) \
-SN | CN -> server desliga corretamente, mas quando volta não está sincronizado corretamente (novo bug introduzido) \
+SN | CN -> server desliga corretamente\
 SC | CC -> partida continua \
-SC | CN -> ok espera por uma nova conexão (ideal agora é criar uma tela de esperando o client se conectar...) - também buga a sincronização similar ao SN | CN ...
+SC | CN -> ok espera por uma nova conexão (ideal agora é criar uma tela de esperando o client se conectar...)
+
+Ou seja, está em perfeito funcionamento agora!

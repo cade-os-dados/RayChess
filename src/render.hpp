@@ -169,18 +169,6 @@ SCENE render_game_scene(
                 c_highlight.Change(false);
             }
         }
-    }else{
-        if(net_side == SERVER_SIDE && !request_queue.empty())
-        {
-            // only debug...
-            // std::cout << "checking: " << request_queue.front() << " " << request_queue.size() << std::endl;
-
-            // if(request_queue.front() == "Finish connection")
-            // {
-            //     push_and_notify("finish");
-            //     player.ChangeTurn(false,&is_gold_turn,[](){});
-            // }
-        }
     }
 
     if(synchronize)

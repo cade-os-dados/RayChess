@@ -35,8 +35,6 @@ CN -> client não continua
 
 Atualmente estamos com a seguinte regra...
 SN | CC -> crash (será tratado mais adiante) \
-SN | CN -> server desliga corretamente \
+SN | CN -> server desliga corretamente, mas quando volta não está sincronizado corretamente (novo bug introduzido) \
 SC | CC -> partida continua \
-SC | CN -> se CN é enviado antes de SC, SC lida com isso e espera nova conexão, porém se CN é enviado depois vai bugar a sequência de mensagens
-
-Portanto, o que deve ser tratado é SC | CN, tendo que SC esperar pela resposta de CN, e necessariamente teria que ser uma mensagem diferente da finish, tipo CONTINUE YES ou CONTINUE NOT, sei lá...
+SC | CN -> ok espera por uma nova conexão (ideal agora é criar uma tela de esperando o client se conectar...) - também buga a sincronização similar ao SN | CN ...

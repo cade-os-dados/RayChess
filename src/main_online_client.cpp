@@ -96,7 +96,7 @@ int main()
             {
                 case MENU_SCENE: scene = render_menu_scene(); break;
                 case GAME_SCENE: scene = render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,SIDE); break;
-                case CONTINUE_SCENE: scene = render_continue_scene(); break;
+                case CONTINUE_SCENE: scene = render_continue_scene(SIDE); break;
             }
         }
     } // call ~Peca() to unload texture

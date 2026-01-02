@@ -57,7 +57,7 @@ SCENE render_menu_scene()
     }
 }
 
-SCENE render_continue_scene()
+SCENE render_continue_scene(NETWORK_SIDE net_side)
 {
     /*-------------- DEFINITION ------------ */
     static Button botao_sim({100,400,200,100});
@@ -79,16 +79,67 @@ SCENE render_continue_scene()
     /*-------------- LOGIC ------------ */
     if(botao_sim.Clicked())
     {
-        ignore_finish_connection_message();
-        return GAME_SCENE;
+        return (net_side == SERVER_SIDE) ? WAIT_CLIENT_RESPONSE_SCENE : GAME_SCENE;
+        // if(net_side == SERVER_SIDE)
+        //     return WAIT_CLIENT_RESPONSE_SCENE;
+        // else
+        //     return GAME_SCENE;
     }
         
     if(botao_nao.Clicked())
     {
-        RUNNING_CLIENT_FLAG.store(false);
-        RUNNING_SERVER_FLAG.store(false);
-        push_and_notify("finish");
+        if(net_side == CLIENT_SIDE)
+        {
+            RUNNING_CLIENT_FLAG.store(false);
+            request_queue.push("CONTINUE: NO");
+        }else{
+            RUNNING_SERVER_FLAG.store(false);
+            push_and_notify("finish");
+        }
+        
         return MENU_SCENE;
     }
     return CONTINUE_SCENE;
+}
+
+SCENE render_wait_client_response_scene()
+{
+    /* Animação dos 3 pontinhos */
+    static int frame = 0;
+    frame++;
+    std::string wait = "Waiting client connection";
+    static std::string points = "";
+    if(frame == 60)
+    {
+        if (points.size() < 3)
+            points.push_back('.');
+        else
+            points = "";
+        frame = 0;
+    }
+
+    BeginDrawing(); 
+        ClearBackground(RAYWHITE);
+        draw_menu_background();
+        DrawText(
+            (wait+points).c_str(),
+            400, 300,24, BLACK // centralizar
+        );
+    EndDrawing();
+
+    std::string front = request_queue.front();
+    if(front == "ping")
+    {
+        // ignore_finish_connection_message();
+        request_queue.pop();
+        return GAME_SCENE;
+    }
+    else if(request_queue.front() == "Finish connection")
+    {
+        request_queue.pop();
+        push_and_notify("finish");
+        return GAME_SCENE; // aqui vamos criar uma tela de esperando nova conexão...
+    }
+
+    return WAIT_CLIENT_RESPONSE_SCENE;
 }

@@ -86,7 +86,7 @@ SCENE render_game_scene(
     HighLightControler& c_highlight,
     NETWORK_SIDE net_side)
 {
-    if(true) // debug
+    if(false) // debug
     {
         static int frames = 0;
         frames++;

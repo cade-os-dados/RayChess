@@ -79,11 +79,8 @@ SCENE render_continue_scene(NETWORK_SIDE net_side)
     /*-------------- LOGIC ------------ */
     if(botao_sim.Clicked())
     {
+        // ignore_finish_connection_message();
         return (net_side == SERVER_SIDE) ? WAIT_CLIENT_RESPONSE_SCENE : GAME_SCENE;
-        // if(net_side == SERVER_SIDE)
-        //     return WAIT_CLIENT_RESPONSE_SCENE;
-        // else
-        //     return GAME_SCENE;
     }
         
     if(botao_nao.Clicked())
@@ -91,7 +88,6 @@ SCENE render_continue_scene(NETWORK_SIDE net_side)
         if(net_side == CLIENT_SIDE)
         {
             RUNNING_CLIENT_FLAG.store(false);
-            request_queue.push("CONTINUE: NO");
         }else{
             RUNNING_SERVER_FLAG.store(false);
             push_and_notify("finish");
@@ -136,7 +132,8 @@ SCENE render_wait_client_response_scene()
     }
     else if(request_queue.front() == "Finish connection")
     {
-        request_queue.pop();
+        // debug
+        // std::cout << "Received finish connection\n";
         push_and_notify("finish");
         return GAME_SCENE; // aqui vamos criar uma tela de esperando nova conexão...
     }

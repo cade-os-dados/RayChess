@@ -56,6 +56,27 @@ public:
         std::lock_guard<std::mutex> lock(mtx);
         return queue.empty();
     }
+
+    void print()
+    {
+        std::vector<std::string> strings;
+        std::lock_guard<std::mutex> lock(mtx);
+        std::cout << " {";
+        while(queue.size() > 0)
+        {
+            std::string front_ = queue.front();
+            strings.push_back(front_);
+            queue.pop();
+
+            std::cout << front_ << " ";
+        }
+        std::cout << " }\n";
+
+        for(auto& str : strings)
+        {
+            queue.push(str);
+        }
+    }
 };
 
 MessageQueue request_queue, response_queue;

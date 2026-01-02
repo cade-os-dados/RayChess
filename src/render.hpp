@@ -86,6 +86,21 @@ SCENE render_game_scene(
     HighLightControler& c_highlight,
     NETWORK_SIDE net_side)
 {
+    if(true) // debug
+    {
+        static int frames = 0;
+        frames++;
+        if(frames == 60*5) // 5 segundos
+        {
+            std::cout << "Request queue: \n";
+            request_queue.print();
+            std::cout << "Response queue: \n";
+            response_queue.print();
+            frames = 0;
+        }
+    }
+
+
     /* Vamos fazer o client primeiro pois é onde estou mexendo... */
     static bool start = false;
     
@@ -181,6 +196,6 @@ SCENE render_game_scene(
                 start = true;
             });
     }
-    
+
     return endgame ? CONTINUE_SCENE : GAME_SCENE;
 }

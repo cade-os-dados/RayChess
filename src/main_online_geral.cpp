@@ -16,7 +16,6 @@ CelDim cel = to_cel_dim({W,H});
 HighLightControler c_highlight;
 bool is_gold_turn = true;
 
-NETWORK_SIDE SIDE = SERVER_SIDE;
 SyncMove sync_move;
 
 using namespace std;
@@ -98,14 +97,16 @@ int main()
         Game game(&gold, &violet, &is_gold_turn, &board);
 
         SCENE scene = MENU_SCENE;
+        NETWORK_SIDE side;
         
         while(!WindowShouldClose())
         {
             switch(scene)
             {
-                case MENU_SCENE: scene = render_menu_scene(); break;
-                case GAME_SCENE: scene = render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,SIDE); break;
-                case CONTINUE_SCENE: scene = render_continue_scene(SIDE); break;
+                case MENU_SCENE: scene = render_menu_scene(false); break;
+                case NETWORK_SIDE_SCENE : scene = render_network_side(&side, player1); break;
+                case GAME_SCENE: scene = render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,side); break;
+                case CONTINUE_SCENE: scene = render_continue_scene(side); break;
                 case WAIT_CLIENT_RESPONSE_SCENE: scene = render_wait_client_response_scene(); break;
             }
         }

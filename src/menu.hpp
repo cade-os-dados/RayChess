@@ -34,7 +34,7 @@ void draw_menu_background()
 }
 
 // void render_menu_scene(InputText& my_input_text)
-SCENE render_menu_scene()
+SCENE render_menu_scene(bool versao_antiga = true)
 {
     // static InputText my_input_text({300,400,100,100}); // criado só uma vez
     static Button button = init_button();
@@ -47,14 +47,66 @@ SCENE render_menu_scene()
 
     if(button.Clicked())
     {
-        RUNNING_CLIENT_FLAG.store(true);
-        RUNNING_SERVER_FLAG.store(true);
-        START_CLIENT_NETWORK.store(true);
-        START_SERVER_NETWORK.store(true);
-        return GAME_SCENE;
+        if(versao_antiga)
+        {
+            RUNNING_CLIENT_FLAG.store(true);
+            RUNNING_SERVER_FLAG.store(true);
+            START_CLIENT_NETWORK.store(true);
+            START_SERVER_NETWORK.store(true);
+            return GAME_SCENE;
+        }
+        else
+        {
+            return NETWORK_SIDE_SCENE;
+        }
     }else{
         return MENU_SCENE;
     }
+}
+
+SCENE render_network_side(NETWORK_SIDE* side, Player& player)
+{
+    static Button client_button({300,250,200,100}); // criado só uma vez
+    client_button.SetText("Client");
+    client_button.SetBackgroundColor(ORANGE);
+
+    static Button server_button({300,350,200,100}); // criado só uma vez
+    server_button.SetText("Server");
+    server_button.SetBackgroundColor(ORANGE);
+
+    /* ---------------- RENDER -------------- */
+    BeginDrawing(); 
+        ClearBackground(RAYWHITE);
+        draw_menu_background();
+        client_button.Draw();
+        server_button.Draw();
+    EndDrawing(); 
+
+    /* -------------- LÓGICA ----------------*/
+
+    if(client_button.Clicked())
+    {
+        // esvaziar a queue
+        while(!request_queue.empty())
+            request_queue.pop();
+
+        RUNNING_CLIENT_FLAG.store(true);
+        START_CLIENT_NETWORK.store(true);
+        *side = CLIENT_SIDE;
+        player = Player(PIECE_COLOR_VIOLET); // por enquanto deixemos assim...
+        return GAME_SCENE;
+    }
+
+    if(server_button.Clicked())
+    {
+        RUNNING_SERVER_FLAG.store(true);
+        START_SERVER_NETWORK.store(true);
+        *side = SERVER_SIDE;
+        player = Player(PIECE_COLOR_GOLD);
+        return GAME_SCENE;
+    }
+
+    return NETWORK_SIDE_SCENE;
 }
 
 SCENE render_continue_scene(NETWORK_SIDE net_side)
@@ -123,19 +175,22 @@ SCENE render_wait_client_response_scene()
         );
     EndDrawing();
 
-    std::string front = request_queue.front();
-    if(front == "ping")
+    if(!request_queue.empty())
     {
-        // ignore_finish_connection_message();
-        request_queue.pop();
-        return GAME_SCENE;
-    }
-    else if(request_queue.front() == "Finish connection")
-    {
-        // debug
-        // std::cout << "Received finish connection\n";
-        push_and_notify("finish");
-        return GAME_SCENE; // aqui vamos criar uma tela de esperando nova conexão...
+        std::string front = request_queue.front();
+        if(front == "ping")
+        {
+            // ignore_finish_connection_message();
+            request_queue.pop();
+            return GAME_SCENE;
+        }
+        else if(request_queue.front() == "Finish connection")
+        {
+            // debug
+            // std::cout << "Received finish connection\n";
+            push_and_notify("finish");
+            return GAME_SCENE; // aqui vamos criar uma tela de esperando nova conexão...
+        }
     }
 
     return WAIT_CLIENT_RESPONSE_SCENE;

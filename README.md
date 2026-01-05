@@ -19,7 +19,7 @@
 
 # Bugs
 
-Server - sincronização
+## ✅ Server - sincronização 1 - CORRIGIDO
 
 ~~Quando coloco a tela de continue se dou não ele vai para MENU SCENE, sendo que para conseguir finalizar ali o game é necessário entrar na GAME_SCENE, pois ali que está encapsulada a lógica de continue...~~
 ~~Teremos que resolver este bug modificando o fluxo ou talvez não inserindo esta tela de continue no server, apenas criando um botão exit talvez...~~
@@ -40,3 +40,15 @@ SC | CC -> partida continua \
 SC | CN -> ok espera por uma nova conexão (ideal agora é criar uma tela de esperando o client se conectar...)
 
 Ou seja, está em perfeito funcionamento agora!
+
+## ✅ Server - sincronizacao 2 - CORRIGIDO
+
+Quando troca de server para client buga a sincronização, a mensagem do client não chega
+
+-> Correção feita: limpamos a queue antes de inicializar o network client (boost)
+
+## ✅ Server - sincronizacao 3 - CORRIGIDO
+
+Este é mais específico, após trocar de client para server, e damos continue no server ele buga e gera um bad alloc dentro do boost
+
+-> Correção feita: checamos se a queue ela está vazia, antes de dar o .front()

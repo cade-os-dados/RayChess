@@ -86,7 +86,7 @@ SCENE render_game_scene(
     HighLightControler& c_highlight,
     NETWORK_SIDE net_side)
 {
-    if(false) // debug
+    if(true) // debug
     {
         static int frames = 0;
         frames++;
@@ -99,7 +99,6 @@ SCENE render_game_scene(
             frames = 0;
         }
     }
-
 
     /* Vamos fazer o client primeiro pois é onde estou mexendo... */
     static bool start = false;

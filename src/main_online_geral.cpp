@@ -83,7 +83,7 @@ int main()
         InfinityMove move(&board);
 
         SetConfigFlags(FLAG_MSAA_4X_HINT);
-        InitWindow(W, H+100, "Server");
+        InitWindow(W, H+100, "CHESS!");
         SetTargetFPS(60);
         
         pecas gold = InitPecas(true, &move);
@@ -108,6 +108,7 @@ int main()
                 case GAME_SCENE: scene = render_game_scene(cache_possible_moves,board,gold,violet,game,player1,is_gold_turn,sync_move,cel,c_highlight,side); break;
                 case CONTINUE_SCENE: scene = render_continue_scene(side); break;
                 case WAIT_CLIENT_RESPONSE_SCENE: scene = render_wait_client_response_scene(); break;
+                case CLIENT_WRITE_IP_SCENE: scene = render_client_write_ip_scene(); break;
             }
         }
     } // call ~Peca() to unload texture

@@ -86,15 +86,21 @@ SCENE render_network_side(NETWORK_SIDE* side, Player& player)
 
     if(client_button.Clicked())
     {
-        // esvaziar a queue
-        while(!request_queue.empty())
-            request_queue.pop();
+        // // versao antiga
+        // // esvaziar a queue
+        // while(!request_queue.empty())
+        //     request_queue.pop();
 
-        RUNNING_CLIENT_FLAG.store(true);
-        START_CLIENT_NETWORK.store(true);
+        // RUNNING_CLIENT_FLAG.store(true);
+        // START_CLIENT_NETWORK.store(true);
+        // *side = CLIENT_SIDE;
+        // player = Player(PIECE_COLOR_VIOLET); // por enquanto deixemos assim...
+        // return GAME_SCENE;
+
+        // versao nova
         *side = CLIENT_SIDE;
         player = Player(PIECE_COLOR_VIOLET); // por enquanto deixemos assim...
-        return GAME_SCENE;
+        return CLIENT_WRITE_IP_SCENE; 
     }
 
     if(server_button.Clicked())
@@ -194,4 +200,33 @@ SCENE render_wait_client_response_scene()
     }
 
     return WAIT_CLIENT_RESPONSE_SCENE;
+}
+
+SCENE render_client_write_ip_scene()
+{
+    static InputText input({400,300,200,100});
+    static Button botao_ok({400,450,150,80});
+    botao_ok.SetText("OK");
+
+    if(botao_ok.Clicked())
+    {
+        // tem que fazer uma checagem se o ip está correto ou não
+        CONNECT_IP_ADDRESS = input.str();
+        // esvaziar a queue
+        while(!request_queue.empty())
+            request_queue.pop();
+
+        RUNNING_CLIENT_FLAG.store(true);
+        START_CLIENT_NETWORK.store(true);
+        return GAME_SCENE;
+    }
+
+    BeginDrawing(); 
+        ClearBackground(RAYWHITE);
+        draw_menu_background();
+        input.Draw();
+        botao_ok.Draw();
+    EndDrawing();
+
+    return CLIENT_WRITE_IP_SCENE;
 }

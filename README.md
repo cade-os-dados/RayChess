@@ -54,3 +54,10 @@ Quando troca de server para client buga a sincronização, a mensagem do client 
 Este é mais específico, após trocar de client para server, e damos continue no server ele buga e gera um bad alloc dentro do boost
 
 -> Correção feita: checamos se a queue ela está vazia, antes de dar o .front()
+
+# Next-on
+
+Vamos trabalhar na digitação do IP:
+
+1. Validação de IP no campo
+2. Pré-preenchimento do ip - se o usuário já digitou uma vez, reutilizar este valor. Podemos setar como "" inicialmente a string do ip para não confundir o usuário -> a porta podemos deixar padrão esta ali que está...

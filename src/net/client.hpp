@@ -1,17 +1,19 @@
 #pragma once
 #include <iostream>
 #include <memory>
+#include <string>
 #include "ssl_security.hpp"
 
 #define DEBUG true
 
 using boost::asio::ip::tcp;
 namespace asio = boost::asio;
+static std::string CONNECT_IP_ADDRESS = "127.0.0.1";
 
 auto find_endpoints(boost::asio::io_context& io, const char* ip, const char* port)
 {
     tcp::resolver resolver(io);
-    auto endpoints = resolver.resolve("127.0.0.1", "4433");
+    auto endpoints = resolver.resolve(CONNECT_IP_ADDRESS.data(), "4433");
     return endpoints;
 }
 

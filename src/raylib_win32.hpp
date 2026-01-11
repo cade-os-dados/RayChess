@@ -1,3 +1,5 @@
+# https://github.com/raysan5/raylib/discussions/1569
+
 #pragma once
 #if defined(_WIN32)
 // To avoid conflicting windows.h symbols with raylib, some flags are defined

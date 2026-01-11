@@ -1,4 +1,6 @@
 #pragma once
+#include "raylib_win32.hpp"
+#include <raylib.h>
 #include "net/interface.hpp"
 
 enum SCENE

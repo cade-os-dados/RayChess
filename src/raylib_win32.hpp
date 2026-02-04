@@ -1,4 +1,4 @@
-# https://github.com/raysan5/raylib/discussions/1569
+// https://github.com/raysan5/raylib/discussions/1569
 
 #pragma once
 #if defined(_WIN32)

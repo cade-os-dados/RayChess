@@ -15,7 +15,8 @@
 
 #pragma once
 #include <raylib.h>
-#include "widgets/input_text.hpp"
+// #include "widgets/input_text.hpp"
+#include "widgets/input/input_ip.hpp"
 #include "widgets/button.hpp"
 #include "scenes.hpp"
 
